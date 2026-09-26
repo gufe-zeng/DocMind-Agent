@@ -1,0 +1,1 @@
+"""DocMind-Agent application package."""
