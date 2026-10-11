@@ -84,6 +84,22 @@ scripts\smoke_test.bat
 | M8 | Agent Metrics + Trace | Planned |
 | M9 | Engineering wrap-up + Demo + Resume | Planned |
 
+## M1a — Parse and chunk documents
+
+M1a is implemented and awaits local validation. It handles PDF/DOCX/TXT,
+retains source page/section metadata and creates deterministic text chunks.
+This checkpoint does not yet generate embeddings or write to Qdrant.
+
+```cmd
+git pull
+docker compose up -d --build
+scripts\check_m1a.bat
+```
+
+Expected final output: `M1a PASS`.
+
+Details: [M1 Guide](docs/M1_GUIDE.md) · [M0 Acceptance](docs/M0_ACCEPTANCE.md)
+
 ## Related Project
 
 Inference serving and observability base:
