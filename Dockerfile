@@ -8,6 +8,8 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY app ./app
 COPY mcp_server ./mcp_server
+COPY scripts/check_document_pipeline.py ./scripts/check_document_pipeline.py
+COPY data/samples ./data/samples
 
 RUN pip install --no-cache-dir .
 
