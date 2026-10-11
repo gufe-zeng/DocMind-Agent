@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M0 — 项目骨架 + PostgreSQL + Redis + Qdrant + FastAPI Health Check**。
+当前开发阶段：**M1 — Document Pipeline**。M0 已通过实际部署与依赖健康检查。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -73,8 +73,8 @@ scripts\smoke_test.bat
 
 | Module | Scope | Status |
 |---|---|---|
-| M0 | Skeleton + PostgreSQL/Redis/Qdrant + Health | In progress |
-| M1 | Document Pipeline | Planned |
+| M0 | Skeleton + PostgreSQL/Redis/Qdrant + Health | Completed (2026-10-11) |
+| M1 | Document Pipeline | In progress |
 | M2 | Hybrid RAG + Rerank + Citation | Planned |
 | M3 | LangGraph Agent + Tool Calling | Planned |
 | M4 | Session/Long-term Memory + Checkpoint | Planned |
