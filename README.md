@@ -86,9 +86,8 @@ scripts\smoke_test.bat
 
 ## M1a — Parse and chunk documents
 
-M1a is implemented and awaits local validation. It handles PDF/DOCX/TXT,
-retains source page/section metadata and creates deterministic text chunks.
-This checkpoint does not yet generate embeddings or write to Qdrant.
+M1a has **passed local validation** (2026-10-14): TXT, PDF, DOCX, source metadata and long-text chunking.
+The next checkpoint, M1b, implements persistent uploads, CPU embeddings and Qdrant indexing.
 
 ```cmd
 git pull
@@ -96,9 +95,41 @@ docker compose up -d --build
 scripts\check_m1a.bat
 ```
 
-Expected final output: `M1a PASS`.
+M1a accepted: `M1a PASS` (reported from the user's Docker environment).
 
 Details: [M1 Guide](docs/M1_GUIDE.md) · [M0 Acceptance](docs/M0_ACCEPTANCE.md)
+
+## M1b — Upload, embed and index in Qdrant
+
+First run (the BGE Chinese model may need a ~90 MB download):
+
+```cmd
+git pull
+docker compose up -d --build
+scripts\check_m1b.bat
+```
+
+A successful test prints three indexed documents (TXT/PDF/DOCX), checks 512-dimensional
+vectors and source metadata in Qdrant, verifies PostgreSQL document statuses and
+checks that re-indexing does not create duplicates. Final line: `M1b PASS`.
+
+Manual API example:
+
+```cmd
+curl --noproxy "*" -X POST -F "file=@data/samples/sample_contract.txt" http://127.0.0.1:8090/v1/documents
+```
+
+Copy `document_id` from the response, then use Windows CMD:
+
+```cmd
+set DOC_ID=your-uuid-from-upload
+curl --noproxy "*" -X POST http://127.0.0.1:8090/v1/documents/%DOC_ID%/index
+```
+
+Implementation and troubleshooting: [M1 Guide](docs/M1_GUIDE.md) ·
+[M1b API Contract](docs/API.md).
+
+**M1 remains In Progress until the M1b Docker test succeeds.**
 
 ## Related Project
 
