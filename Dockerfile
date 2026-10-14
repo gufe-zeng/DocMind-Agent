@@ -9,6 +9,8 @@ COPY pyproject.toml README.md ./
 COPY app ./app
 COPY mcp_server ./mcp_server
 COPY scripts/check_document_pipeline.py ./scripts/check_document_pipeline.py
+COPY scripts/check_m1b.py ./scripts/check_m1b.py
+COPY migrations ./migrations
 COPY data/samples ./data/samples
 
 RUN pip install --no-cache-dir .

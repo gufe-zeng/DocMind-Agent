@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     llm_api_key: str = "EMPTY"
     llm_model: str = "Qwen/Qwen3-0.6B"
 
+    upload_dir: str = "/app/data/uploads"
+    embedding_cache_dir: str = "/app/data/embed_cache"
+    embedding_model: str = "BAAI/bge-small-zh-v1.5"
+    embedding_vector_size: int = 512
+    max_upload_bytes: int = 10 * 1024 * 1024
+    max_chunks_per_document: int = 1000
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
