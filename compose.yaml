@@ -63,6 +63,14 @@ services:
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-small-zh-v1.5}
       EMBEDDING_VECTOR_SIZE: '512'
       MAX_UPLOAD_BYTES: '10485760'
+      # Optional runtime proxy for downloads from inside the Linux container.
+      # Docker Desktop's host.docker.internal refers to the Windows host.
+      HTTP_PROXY: ${DOCMIND_PROXY_URL:-}
+      HTTPS_PROXY: ${DOCMIND_PROXY_URL:-}
+      ALL_PROXY: ${DOCMIND_PROXY_URL:-}
+      NO_PROXY: "localhost,127.0.0.1,postgres,redis,qdrant,api,host.docker.internal"
+      # Default to official Hugging Face; override only when a mirror is verified.
+      HF_ENDPOINT: ${DOCMIND_HF_ENDPOINT:-https://huggingface.co}
     volumes:
       - documents-data:/app/data/uploads
       - embedding-cache:/app/data/embed_cache
