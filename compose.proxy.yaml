@@ -1,0 +1,19 @@
+# Optional Compose overlay for a Clash HTTP/mixed proxy running on Windows.
+# Do NOT point containers at 127.0.0.1:7897; that is the container itself.
+# Docker Desktop resolves host.docker.internal to the Windows host.
+#
+# Usage (Windows CMD):
+#   docker compose -f compose.yaml -f compose.proxy.yaml up -d --no-deps --force-recreate api
+#   docker compose exec -T api python scripts/check_m1b.py
+#
+# Set CLASH_PORT in .env to override the default proxy port.
+services:
+  api:
+    environment:
+      HTTP_PROXY: http://host.docker.internal:${CLASH_PORT:-7897}
+      HTTPS_PROXY: http://host.docker.internal:${CLASH_PORT:-7897}
+      http_proxy: http://host.docker.internal:${CLASH_PORT:-7897}
+      https_proxy: http://host.docker.internal:${CLASH_PORT:-7897}
+      NO_PROXY: localhost,127.0.0.1,::1,api,postgres,redis,qdrant,host.docker.internal
+      no_proxy: localhost,127.0.0.1,::1,api,postgres,redis,qdrant,host.docker.internal
+      HF_ENDPOINT: ${HF_ENDPOINT:-https://huggingface.co}
