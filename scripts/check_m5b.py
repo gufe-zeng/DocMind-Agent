@@ -79,6 +79,41 @@ def verify_cited_chunks(payload: dict, document_id: str, page=None) -> None:
             assert source["page"] == page, payload
 
 
+async def wait_for_api(http: httpx.AsyncClient, *, seconds: int = 90) -> None:
+    """Avoid racing Uvicorn startup immediately after docker compose rebuild.
+
+    Called inside the API container, so 127.0.0.1:8000 is the Uvicorn
+    listener. Failure is reported as API connectivity, before MCP checks.
+    """
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + seconds
+    last_error = "no response"
+    while True:
+        try:
+            reply = await http.get("/health", timeout=5)
+            reply.raise_for_status()
+            body = reply.json()
+            if body.get("status") != "ok":
+                raise RuntimeError("API health status is not ok")
+            print(
+                "PASS DocMind API readiness at 127.0.0.1:8000",
+                flush=True,
+            )
+            return
+        except (httpx.HTTPError, RuntimeError, ValueError) as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+            if loop.time() >= deadline:
+                raise RuntimeError(
+                    "M5b stopped before MCP calls: DocMind API in its own "
+                    "container did not become reachable at "
+                    "http://127.0.0.1:8000/health within "
+                    f"{seconds}s. Last probe: {last_error}. "
+                    "Run 'docker compose ps' and "
+                    "'docker compose logs --tail 100 api'."
+                ) from exc
+            await asyncio.sleep(2)
+
+
 async def main() -> None:
     contract = (
         "合同付款期限：甲方在乙方验收合格后三十日内支付合同款项。\n"
@@ -87,6 +122,7 @@ async def main() -> None:
     async with httpx.AsyncClient(
         base_url="http://127.0.0.1:8000", timeout=600, trust_env=False
     ) as http:
+        await wait_for_api(http)
         txt_id = await index(
             http, "m5b_contract.txt", contract.encode("utf-8"), "text/plain"
         )
