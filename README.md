@@ -80,7 +80,7 @@ scripts\smoke_test.bat
 | M4 | Session/Long-term Memory + Checkpoint | Completed (2026-10-15) |
 | M5 | MCP Server + Client | Completed (2026-10-15) |
 | M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
-| M7 | RAG/Agent/System Eval | In progress: M7a Completed; M7b pending local acceptance |
+| M7 | RAG/Agent/System Eval | In progress: M7a/M7b Completed; M7c pending local acceptance |
 | M8 | Agent Metrics + Trace | Planned |
 | M9 | Engineering wrap-up + Demo + Resume | Planned |
 
@@ -491,7 +491,7 @@ indexed document IDs. These are smoke-test metrics, not real-world
 generalization or semantic citation-accuracy claims.
 See [M7a acceptance](docs/M7A_ACCEPTANCE.md).
 
-## M7b — Agent evaluation (implementation available; local acceptance pending)
+## M7b — Agent evaluation (accepted 2026-10-15)
 
 `eval/agent_eval.py` computes task success, tool selection, MCP tool selection,
 tool success, average steps, and runtime failure rate against explicit
@@ -507,6 +507,40 @@ docker compose up -d --build api
 scripts\check_m7b.bat
 ```
 
-Expected: `M7b AGENT EVAL PASS` and
-`M7b Agent evaluation validation passed.`. Do not mark M7b Completed
-before this actual Docker test. See [Evaluation design](docs/EVALUATION.md).
+Observed: `M7b AGENT EVAL PASS` and
+`M7b Agent evaluation validation passed.` on real local Docker.
+Seven synthetic cases achieved Task Success=1.0, Tool Selection=1.0,
+MCP Tool Selection=1.0 and Tool Success=1.0 (8/8 tool calls).
+Average steps=1.142857, runtime failure rate=0.
+See [M7b acceptance](docs/M7B_ACCEPTANCE.md) and
+[Evaluation design](docs/EVALUATION.md).
+
+## M7c — System evaluation (implemented; BASE/LIVE acceptance pending)
+
+M7c measures four serial real Agent HTTP request latencies, read-only M6
+`tool_events` durations, and separately samples real Dense/BM25/RRF retrieval
+and BGE rerank stage latencies. These stage samples are **not** attributed
+to a particular Agent request. The baseline confirms no-model tool routes.
+Optional LIVE testing measures a separate real Qwen RAG call with actual
+prompt/completion token usage where the provider returns it.
+
+Windows CMD (BASE, no Qwen):
+
+```cmd
+cd /d E:\\project\\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\\check_m7c.bat
+```
+
+Expected: `M7c SYSTEM BASE PASS`.
+
+With the existing Qwen/vLLM server running on host port 8000:
+
+```cmd
+scripts\\check_m7c_live.bat
+```
+
+Expected: `M7c SYSTEM LIVE PASS`.
+Both live Docker gates are required before marking M7c Completed.
+See [Evaluation design](docs/EVALUATION.md).
