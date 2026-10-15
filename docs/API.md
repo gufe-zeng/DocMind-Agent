@@ -259,9 +259,9 @@ returned source text and retains source metadata. `get_document_page`
 is meaningful only for PDFs with real page numbers.
 
 A dedicated SDK client smoke test is provided as `scripts\check_m5a.bat`.
-M5b will connect LangGraph through a reusable client adapter.
+M5b connects LangGraph through an official SDK ClientSession adapter and has passed real Docker acceptance.
 
-## M5b — Agent MCP tool reporting (pending Docker acceptance)
+## M5b — Agent MCP tool reporting (accepted 2026-10-15)
 
 Explicit MCP requests use the unchanged POST /v1/chat API. Example:
 

@@ -1,6 +1,6 @@
 # M5 — Model Context Protocol (Document MCP Server + Client)
 
-Status: **M5a Completed (2026-10-15); M5b Agent integration in progress**.
+Status: **M5a + M5b Completed (2026-10-15), including Agent → MCP stdio integration**.
 
 ## Frozen V1 requirements
 
@@ -85,7 +85,7 @@ The Python MCP SDK package is a new dependency, so rebuild the API image.
 - No user authentication/authorization is present in the local demo.
   Do not grant this subprocess access to untrusted users.
 
-## M5b — Agent MCP client adapter (implemented; local verification pending)
+## M5b — Agent MCP client adapter (accepted 2026-10-15)
 
 M5b adds an adapter under `app/mcp_client/` and allows selected
 LangGraph business tool calls to route through MCP ClientSession.
@@ -139,3 +139,9 @@ Errors from MCP are not silently replaced with successful Python results.
 Read deadlines exist; general retry/fallback/HITL remains M6.
 This local stdio demo has no authentication and must not be exposed
 on a public network. MCP subprocesses are created per call, not pooled.
+
+## Final M5 acceptance
+
+Both tests have passed on the developer's real Docker setup:
+`M5a MCP PASS` and `M5b AGENT MCP PASS`.
+The M5b run verified the four MCP-backed Agent tools and a combined metadata + clause operation. See [M5b Acceptance Record](M5B_ACCEPTANCE.md). Production-level transport retry, multi-user authorization and approval-protected writes remain outside M5.

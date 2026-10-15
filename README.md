@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M5 — MCP Server + Client**。M0–M4 已通过本地功能验收。
+当前开发阶段：**M6 — Reliability + HITL**。M0–M5 均已通过本地功能验收。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -78,8 +78,8 @@ scripts\smoke_test.bat
 | M2 | Hybrid RAG + Rerank + Citation | Completed (2026-10-15) |
 | M3 | LangGraph Agent + Tool Calling | Completed (2026-10-15) |
 | M4 | Session/Long-term Memory + Checkpoint | Completed (2026-10-15) |
-| M5 | MCP Server + Client | In progress |
-| M6 | Retry + Timeout + Fallback + HITL | Planned |
+| M5 | MCP Server + Client | Completed (2026-10-15) |
+| M6 | Retry + Timeout + Fallback + HITL | In progress |
 | M7 | RAG/Agent/System Eval | Planned |
 | M8 | Agent Metrics + Trace | Planned |
 | M9 | Engineering wrap-up + Demo + Resume | Planned |
@@ -376,7 +376,7 @@ M5a **passed** real MCP Server/Client transport acceptance using an independent 
 The LangGraph Agent continues to call its existing tools directly until
 **M5b** integrates the MCP client adapter. See [MCP Guide](docs/MCP.md).
 
-## M5b — LangGraph Agent MCP integration (local acceptance pending)
+## M5b — LangGraph Agent MCP integration (accepted 2026-10-15)
 
 M5b adds a real Model Context Protocol ClientSession adapter inside the
 existing LangGraph Agent, without changing the accepted M2–M4 execution.
@@ -410,7 +410,7 @@ the live HTTP API, checking chunk/document/page provenance and citations.
 Expected final lines: `M5b AGENT MCP PASS` and
 `M5b Agent MCP validation passed.`. No vLLM is required.
 
-M5b remains **In Progress** until local Docker acceptance passes.
+**M5b passed real local Docker acceptance on 2026-10-15.** The actual Agent reported MCP tool names, original chunks, PDF page 2 provenance, and multi-tool execution. M5 is Completed; see [M5b acceptance](docs/M5B_ACCEPTANCE.md).
 See [MCP Guide](docs/MCP.md).
 
 ## Related Project

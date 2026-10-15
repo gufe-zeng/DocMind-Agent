@@ -397,7 +397,7 @@ Long-term structured/semantic memory and deliberate interruption-resume
 remain M4b tasks. This is an unauthenticated local demo only.
 
 
-## M5a Document MCP Server — implemented, pending local acceptance
+## M5a Document MCP Server — accepted 2026-10-15
 
 The frozen four-tool MCP contract is exposed through an official MCP Python
 SDK `FastMCP` stdio subprocess. Its handlers read PostgreSQL document

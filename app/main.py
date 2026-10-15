@@ -64,7 +64,7 @@ async def root() -> dict[str, str]:
     return {
         "service": settings.app_name,
         "version": "0.1.0",
-        "stage": "M5a",
+        "stage": "M5",
         "status": "running",
     }
 

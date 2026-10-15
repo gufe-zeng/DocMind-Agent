@@ -26,11 +26,10 @@ Do **not** claim RAG, Agent, Memory or MCP functionality before the correspondin
 - Memory, MCP, HITL and quantitative Agent evaluation remain future modules.
 
 
-## M5 MCP integration (pending local acceptance)
+## M5 MCP integration (accepted 2026-10-15)
 
 M5a uses the official Python MCP SDK, a separately launched stdio
 server process, and the MCP initialize/tools-list/tools-call lifecycle.
 Four bounded read-only document tools expose provenance-aware PostgreSQL,
 Qdrant and Hybrid Retrieval results. This is distinct from M3's direct
-Python function registry. M5a transport acceptance and M5b Agent integration
-must both pass before M5 is considered complete.
+Python function registry. M5a transport acceptance and M5b Agent integration both passed in the real Docker environment; this is functional testing rather than production reliability evaluation.
