@@ -80,7 +80,7 @@ scripts\smoke_test.bat
 | M4 | Session/Long-term Memory + Checkpoint | Completed (2026-10-15) |
 | M5 | MCP Server + Client | Completed (2026-10-15) |
 | M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
-| M7 | RAG/Agent/System Eval | Planned |
+| M7 | RAG/Agent/System Eval | In progress: M7a Completed; M7b pending local acceptance |
 | M8 | Agent Metrics + Trace | Planned |
 | M9 | Engineering wrap-up + Demo + Resume | Planned |
 
@@ -480,3 +480,33 @@ https://github.com/gufe-zeng/llm-serving-ops
 ## V1 Non-goals
 
 V1 does **not** implement Multi-Agent, fine-tuning, Kubernetes, OCR, multimodal parsing, browser agents, A2A, autoscaling, or unlimited reflection.
+
+
+## M7a — Retrieval evaluation (accepted 2026-10-15)
+
+`scripts\\check_m7a.bat` passed on the local Docker stack: three synthetic
+document-level cases produced Recall@3=1.0 and MRR@3=1.0.
+Sixty-three retrieved candidate chunks were outside the fixture's newly
+indexed document IDs. These are smoke-test metrics, not real-world
+generalization or semantic citation-accuracy claims.
+See [M7a acceptance](docs/M7A_ACCEPTANCE.md).
+
+## M7b — Agent evaluation (implementation available; local acceptance pending)
+
+`eval/agent_eval.py` computes task success, tool selection, MCP tool selection,
+tool success, average steps, and runtime failure rate against explicit
+synthetic fixture assertions. The test calls the real Agent HTTP API and
+stdio MCP stack without Qwen, and checks source evidence/document scope.
+
+Windows CMD:
+
+```cmd
+cd /d E:\\project\\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\\check_m7b.bat
+```
+
+Expected: `M7b AGENT EVAL PASS` and
+`M7b Agent evaluation validation passed.`. Do not mark M7b Completed
+before this actual Docker test. See [Evaluation design](docs/EVALUATION.md).
