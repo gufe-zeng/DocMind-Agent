@@ -148,7 +148,7 @@ async def synthesize_node(state: AgentState) -> dict[str, Any]:
         tool_status = str(result.get("status", "answered"))
         step_statuses.append(tool_status)
 
-        if result.get("tool") == "query_document_metadata":
+        if result.get("tool") == "query_document_metadata" and tool_status != "tool_unavailable":
             replies.append(_summarize_metadata(result))
             continue
 
