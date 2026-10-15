@@ -1,11 +1,11 @@
 # M1 — Document Pipeline
 
-Status: **M1a Completed (2026-10-14); M1b implemented, local acceptance pending**.
+Status: **M1a Completed (2026-10-14); M1b Completed (2026-10-15)**.
 
 M1 is split into two checkpoints to make failures easier to isolate:
 
 - **M1a (completed)** — PDF/DOCX/TXT → normalized source blocks → deterministic chunks, with page/section provenance.
-- **M1b (awaits local validation)** — Upload + metadata persistence → BGE embedding (CPU) → Qdrant indexing; only then is the full M1 complete.
+- **M1b (completed)** — Upload + metadata persistence → BGE embedding (CPU) → Qdrant indexing; only then is the full M1 complete.
 
 ## M1a: concepts
 
@@ -214,5 +214,4 @@ documents, PostgreSQL data, Qdrant indexes and embedding-model cache.
 - No authentication or production-grade document access control at this stage.
 - Hybrid search/reranking/answer generation belong to **M2**, not M1.
 
-**M1 is complete only after M1b runs successfully in the user's Docker
-environment and reports the real Qdrant vector/payload checks.**
+**M1 Completed.** The user's Docker test returned `M1b PASS` after verifying TXT/PDF/DOCX and idempotent reindexing. See [M1 Acceptance](M1_ACCEPTANCE.md).

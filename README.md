@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M1 — Document Pipeline**。M0 已通过实际部署与依赖健康检查。
+当前开发阶段：**M2 — Hybrid RAG**。M0、M1 均已通过实际部署及本地验收。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -74,8 +74,8 @@ scripts\smoke_test.bat
 | Module | Scope | Status |
 |---|---|---|
 | M0 | Skeleton + PostgreSQL/Redis/Qdrant + Health | Completed (2026-10-11) |
-| M1 | Document Pipeline | In progress |
-| M2 | Hybrid RAG + Rerank + Citation | Planned |
+| M1 | Document Pipeline | Completed (2026-10-15) |
+| M2 | Hybrid RAG + Rerank + Citation | In progress |
 | M3 | LangGraph Agent + Tool Calling | Planned |
 | M4 | Session/Long-term Memory + Checkpoint | Planned |
 | M5 | MCP Server + Client | Planned |
@@ -139,7 +139,7 @@ curl --noproxy "*" -X POST http://127.0.0.1:8090/v1/documents/%DOC_ID%/index
 Implementation and troubleshooting: [M1 Guide](docs/M1_GUIDE.md) ·
 [M1b API Contract](docs/API.md).
 
-**M1 remains In Progress until the M1b Docker test succeeds.**
+**M1 Completed (2026-10-15).** Local tests passed: ModelScope ONNX download, 512-dimensional CPU embedding, TXT/PDF/DOCX upload and Qdrant indexing, and idempotent reindexing.
 
 ## Related Project
 
