@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent.state import AgentState
 from app.memory.checkpoint import thread_config
+from app.memory.long_term import format_hint, is_memory_command, parse_format_preference
 from app.memory.session import SessionBusyError, resolve_followup
 
 
@@ -24,6 +25,7 @@ class ChatRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2000)
     document_id: UUID | None = None
     session_id: UUID | None = None
+    user_id: UUID | None = None
 
 
 class ChatResponse(BaseModel):
@@ -40,6 +42,9 @@ class ChatResponse(BaseModel):
     sources: list[dict]
     context_applied: bool = False
     effective_document_id: UUID | None = None
+    memory_saved: dict | None = None
+    retrieved_memories: list[dict] = Field(default_factory=list)
+    memory_applied: bool = False
 
 
 class SessionResponse(BaseModel):
@@ -53,13 +58,15 @@ class SessionResponse(BaseModel):
 
 
 def _initial_state(
-    session_id: str, *, query: str, document_id: str | None
+    session_id: str, *, query: str, document_id: str | None,
+    format_hint: str | None = None,
 ) -> AgentState:
     """Reset turn-local state while keeping the persistent graph thread."""
     return {
         "session_id": session_id,
         "query": query,
         "document_id": document_id,
+        "format_hint": format_hint,
         "messages": [],
         "intent": "",
         "plan": [],
