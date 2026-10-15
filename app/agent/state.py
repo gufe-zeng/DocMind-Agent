@@ -1,8 +1,4 @@
-"""M3a: serializable state contract for the LangGraph runtime.
-
-M4 adds session memory and durable checkpointers. M3a is deliberately
-stateless between requests even when callers provide a session_id.
-"""
+"""Serializable M3 state. Durable M4 memory/checkpoints come later."""
 
 from typing import Any, TypedDict
 
@@ -16,6 +12,8 @@ class AgentState(TypedDict, total=False):
 
     intent: str
     plan: list[str]
+    plan_source: str
+    planner_fallback_reason: str | None
     next_tool: str | None
 
     retrieved_docs: list[dict[str, Any]]
@@ -24,7 +22,6 @@ class AgentState(TypedDict, total=False):
 
     current_step: int
     retry_count: int
-
     approval_required: bool
     final_answer: str
     status: str
