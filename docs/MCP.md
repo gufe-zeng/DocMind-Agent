@@ -1,6 +1,6 @@
 # M5 — Model Context Protocol (Document MCP Server + Client)
 
-Status: **M5a implemented and unit-tested; local protocol acceptance pending**.
+Status: **M5a Completed (2026-10-15); M5b Agent integration in progress**.
 
 ## Frozen V1 requirements
 
@@ -85,7 +85,7 @@ The Python MCP SDK package is a new dependency, so rebuild the API image.
 - No user authentication/authorization is present in the local demo.
   Do not grant this subprocess access to untrusted users.
 
-## M5b — Planned after M5a acceptance
+## M5b — Agent MCP client adapter (implementation in progress)
 
 M5b adds an adapter under `app/mcp_client/` and allows selected
 LangGraph business tool calls to route through MCP ClientSession.

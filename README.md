@@ -343,7 +343,7 @@ Expected: `M4b MEMORY PASS` and `M4b CHECKPOINT PASS`.
 **Security boundary:** `user_id` is a caller-provided demonstration UUID,
 not an authenticated identity. Keep the API local-only.
 
-## M5a — Document MCP Server (implementation ready; local acceptance pending)
+## M5a — Document MCP Server (accepted 2026-10-15)
 
 M5a implements the four **frozen V1 document MCP tools** using the official
 Python MCP SDK with JSON-RPC over **stdio**, not an imitation REST endpoint:
@@ -370,9 +370,9 @@ docker compose up -d --build api
 scripts\check_m5a.bat
 ```
 
-Expected final output: `M5a MCP PASS` and `M5a validation passed.`.
+**Observed output on 2026-10-15:** `M5a MCP PASS` and `M5a validation passed.`.
 
-M5a proves the MCP Server/Client **transport** with an independent client.
+M5a **passed** real MCP Server/Client transport acceptance using an independent client.
 The LangGraph Agent continues to call its existing tools directly until
 **M5b** integrates the MCP client adapter. See [MCP Guide](docs/MCP.md).
 
