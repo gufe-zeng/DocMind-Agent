@@ -35,6 +35,7 @@ class ChatResponse(BaseModel):
     intent: str
     answer: str
     tools_called: list[str]
+    mcp_tools_called: list[str] = Field(default_factory=list)
     plan_source: str
     planner_fallback_reason: str | None = None
     steps: int
@@ -169,6 +170,11 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                 intent=result.get("intent", "unknown"),
                 answer=answer,
                 tools_called=result.get("tools_called", []),
+                mcp_tools_called=[
+                    str(step["mcp_tool"])
+                    for step in result.get("tool_results", [])
+                    if step.get("mcp_transport") == "stdio" and step.get("mcp_tool")
+                ],
                 plan_source=result.get("plan_source", "rules"),
                 planner_fallback_reason=result.get("planner_fallback_reason"),
                 steps=result.get("current_step", 0),

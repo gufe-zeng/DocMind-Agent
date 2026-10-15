@@ -29,6 +29,10 @@ ALLOWED_TOOLS = frozenset({
     "query_document_metadata",
     "extract_entities",
     "summarize_document",
+    "mcp_find_clause",
+    "mcp_get_document",
+    "mcp_get_document_page",
+    "mcp_search_documents",
 })
 MAX_PLANNED_TOOLS = 4
 
@@ -44,6 +48,23 @@ def select_tool_plan(query: str) -> list[str]:
     """Produce a safe default plan from explicitly recognized intents."""
     if not query.strip():
         raise ValueError("Query cannot be empty.")
+
+    # Explicit "MCP" routing is opt-in: existing RAG/Agent queries are
+    # untouched. This is deterministic, audited adapter selection.
+    if "mcp" in query.lower():
+        plan: list[str] = []
+        if any(term in query for term in ("文档信息", "文件信息", "元数据", "文档状态")):
+            plan.append("mcp_get_document")
+        if re.search(r"第\s*\d{1,4}\s*页", query):
+            plan.append("mcp_get_document_page")
+        if any(term in query for term in ("查找", "定位", "条款", "关键词")) and not re.search(
+            r"第\s*\d{1,4}\s*页", query
+        ):
+            plan.append("mcp_find_clause")
+        if any(term in query for term in ("检索", "搜索", "查询证据")) or not plan:
+            plan.append("mcp_search_documents")
+        return plan[:MAX_PLANNED_TOOLS]
+
     metadata = any(term in query for term in METADATA_INTENTS)
     extraction = any(term in query for term in EXTRACTION_INTENTS)
     summary = any(term in query for term in SUMMARY_INTENTS)

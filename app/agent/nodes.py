@@ -10,6 +10,7 @@ from typing import Any
 from app.agent.router import plan_tools
 from app.agent.state import AgentState
 from app.tools.registry import invoke_tool
+from app.tools.mcp_bridge import clause_keyword_from_query, page_number_from_query
 
 
 MAX_AGENT_TOOL_STEPS = 8
@@ -56,6 +57,15 @@ async def call_tool_node(state: AgentState) -> dict[str, Any]:
         arguments["query"] = state["query"]
     if name in ("search_documents", "summarize_document") and state.get("format_hint"):
         arguments["format_hint"] = state["format_hint"]
+
+    if name == "mcp_find_clause":
+        arguments["keyword"] = clause_keyword_from_query(state["query"])
+    elif name == "mcp_get_document_page":
+        arguments["page"] = page_number_from_query(state["query"])
+    elif name == "mcp_search_documents":
+        # The server searches original question text; it is source-grounded.
+        arguments["query"] = state["query"]
+        arguments["limit"] = 5
 
     result = await invoke_tool(name, arguments=arguments)
     return {
