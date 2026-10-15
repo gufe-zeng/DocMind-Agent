@@ -1,6 +1,6 @@
 # M3 — Agent Core & Tool Calling
 
-Status: **M3a code implemented; local Docker acceptance pending**.
+Status: **M3a Completed (2026-10-15); M3b next**.
 
 ## Scope split
 
