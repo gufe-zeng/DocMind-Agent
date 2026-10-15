@@ -1,5 +1,7 @@
 # DocMind-Agent
 
+**Language / 语言**：[中文 README](README_CN.md) · [中文项目学习手册（21 章，含 58 个 Agent/RAG 面试问答）](docs/LEARNING_GUIDE_CN.md) · [原版 README / Original guide](README.md)
+
 > 面向复杂文档的可追溯 RAG Agent 系统。
 
 DocMind-Agent V1.0 的目标是面向法律、政务、合同等复杂文档，构建一条可解释、可评测、可恢复、可观测的 Agent 应用链路：

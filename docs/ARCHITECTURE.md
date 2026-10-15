@@ -1,6 +1,8 @@
 # DocMind-Agent V1.0 Architecture
 
 > Status: **FROZEN**
+>
+> **阅读说明（2026-10-15）**：本文件保留冻结的逻辑架构和中间开发阶段的历史文字；其中“某模块尚未验收”的旧状态以最新 [中文 README](../README_CN.md)、[中文源码学习手册](LEARNING_GUIDE_CN.md) 与 [M9 最终验收](M9_ACCEPTANCE.md) 为准，不应混同最终实现状态。
 
 ## 1. Design Principles
 
