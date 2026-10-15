@@ -83,8 +83,13 @@ def _result_with_evidence(
             "sources": [],
         }
 
-    if len(rows) > 10:
+    if len(rows) > 20:
         raise RuntimeError("MCP tool returned too many evidence chunks.")
+    expected_document = payload.get("document_id")
+    if expected_document is not None and any(
+        row.get("document_id") != expected_document for row in rows
+    ):
+        raise RuntimeError("MCP evidence scope differs from the tool result.")
     sources: list[dict] = []
     answer_lines: list[str] = []
     for index, row in enumerate(rows, start=1):
