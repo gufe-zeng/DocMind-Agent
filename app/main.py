@@ -34,6 +34,8 @@ async def lifespan(app: FastAPI):
         async with open_checkpointer(settings.postgres_dsn) as checkpointer:
             # Uses LangGraph's own PostgreSQL checkpoint schema/migrations.
             app.state.agent_graph = build_agent_graph(checkpointer=checkpointer)
+            from app.memory.long_term import LongTermMemory
+            app.state.long_term_memory = LongTermMemory()
             app.state.session_store = SessionStore(
                 redis_client,
                 ttl_seconds=settings.session_ttl_seconds,
