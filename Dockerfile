@@ -10,6 +10,7 @@ COPY app ./app
 COPY mcp_server ./mcp_server
 COPY eval ./eval
 COPY scripts/check_m7a.py ./scripts/check_m7a.py
+COPY scripts/check_m7b.py ./scripts/check_m7b.py
 COPY scripts/check_document_pipeline.py ./scripts/check_document_pipeline.py
 COPY scripts/check_m1b.py ./scripts/check_m1b.py
 COPY scripts/check_m2a.py ./scripts/check_m2a.py
@@ -31,7 +32,7 @@ COPY data/samples ./data/samples
 RUN pip install --no-cache-dir .
 
 # A direct script execution does not add /app to sys.path; require eval to be installed.
-RUN cd /tmp && python -c "from eval.rag_metrics import evaluate_retrieval; print('eval package import OK')"
+RUN cd /tmp && python -c "from eval.rag_metrics import evaluate_retrieval; from eval.agent_eval import evaluate_agent; print('eval package import OK')"
 
 # Fail image build if the psycopg native backend cannot load in slim Linux.
 RUN python -c "from psycopg import pq; from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver; assert pq.__impl__ == 'binary', pq.__impl__; print('psycopg binary driver OK')"
