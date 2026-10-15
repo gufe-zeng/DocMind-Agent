@@ -22,6 +22,8 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_documents_schema(settings.postgres_dsn)
+    from app.memory.long_term import init_memory_schema
+    await init_memory_schema(settings.postgres_dsn)
     redis_client = Redis.from_url(
         settings.redis_url,
         decode_responses=True,
