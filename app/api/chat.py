@@ -11,6 +11,8 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent.state import AgentState
+from app.approvals.policy import is_review_note_command, parse_review_note
+from app.approvals.storage import create_approval
 from app.memory.checkpoint import thread_config
 from app.memory.long_term import format_hint, is_memory_command, parse_format_preference
 from app.memory.session import SessionBusyError, resolve_followup
@@ -48,6 +50,8 @@ class ChatResponse(BaseModel):
     memory_saved: dict | None = None
     retrieved_memories: list[dict] = Field(default_factory=list)
     memory_applied: bool = False
+    approval_id: UUID | None = None
+    approval_required: bool = False
 
 
 class SessionResponse(BaseModel):
@@ -64,11 +68,13 @@ def _initial_state(
     session_id: str, *, query: str, document_id: str | None,
     format_hint: str | None = None,
     user_id: str | None = None,
+    approval_id: str | None = None,
 ) -> AgentState:
     """Reset turn-local state while keeping the persistent graph thread."""
     return {
         "session_id": session_id,
         "user_id": user_id,
+        "approval_id": approval_id,
         "query": query,
         "document_id": document_id,
         "format_hint": format_hint,
@@ -114,6 +120,51 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                 requested_doc if requested_doc is not None
                 else (previous.get("document_id") if previous else None)
             )
+            # Do not allow another turn to overwrite a paused protected
+            # write checkpoint for the same session.
+            if request.session_id is not None:
+                snapshot = await graph.aget_state(thread_config(sid))
+                if snapshot is not None and snapshot.next:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="This session has a paused graph; resolve its approval first.",
+                    )
+
+            if is_review_note_command(request.query):
+                if user_id is None or document_id is None:
+                    raise ValueError(
+                        "Protected review notes require user_id and document_id."
+                    )
+                note = parse_review_note(request.query)
+                pending = await create_approval(
+                    session_id=session_id, user_id=user_id,
+                    document_id=UUID(document_id), note=note,
+                )
+                approval_id = pending["approval_id"]
+                paused = await graph.ainvoke(
+                    _initial_state(
+                        sid, query=request.query, document_id=document_id,
+                        user_id=str(user_id), approval_id=approval_id,
+                    ),
+                    config=thread_config(sid),
+                )
+                if not paused.get("__interrupt__"):
+                    raise RuntimeError("Protected write did not suspend LangGraph.")
+                answer = "审核备注等待人工审批，尚未写入：" + note
+                await store.append_turn(
+                    sid, user_id=str(user_id), document_id=document_id,
+                    query=request.query, resolved_query=request.query,
+                    answer=answer, status="approval_required",
+                )
+                return ChatResponse(
+                    request_id=request_id, session_id=session_id,
+                    status="approval_required", intent="protected_write",
+                    approval_id=UUID(approval_id), approval_required=True,
+                    answer=answer, tools_called=[], plan_source="rules",
+                    steps=0, entities=[], sources=[],
+                    effective_document_id=UUID(document_id),
+                )
+
             if is_memory_command(request.query):
                 if user_id is None:
                     raise ValueError("Saving an explicit preference requires user_id.")
