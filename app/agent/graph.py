@@ -16,7 +16,7 @@ from app.agent.nodes import (
 from app.agent.state import AgentState
 
 
-def build_agent_graph(checkpointer=None):
+def build_agent_graph(checkpointer=None, *, interrupt_before=None):
     flow = StateGraph(AgentState)
     flow.add_node("route", route_node)
     flow.add_node("decide", decide_node)
