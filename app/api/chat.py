@@ -60,10 +60,12 @@ class SessionResponse(BaseModel):
 def _initial_state(
     session_id: str, *, query: str, document_id: str | None,
     format_hint: str | None = None,
+    user_id: str | None = None,
 ) -> AgentState:
     """Reset turn-local state while keeping the persistent graph thread."""
     return {
         "session_id": session_id,
+        "user_id": user_id,
         "query": query,
         "document_id": document_id,
         "format_hint": format_hint,
@@ -141,6 +143,7 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                 _initial_state(
                     sid, query=resolved_query, document_id=document_id,
                     format_hint=hint,
+                    user_id=str(user_id) if user_id else None,
                 ),
                 config=thread_config(sid),
             )
