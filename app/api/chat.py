@@ -130,8 +130,18 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
             resolved_query, used_context = resolve_followup(
                 request.query, previous, document_id=document_id
             )
+            recalled = []
+            if user_id is not None and any(
+                word in request.query
+                for word in ("合同", "文档", "条款", "付款", "违约")
+            ):
+                recalled = await memory.search(user_id, request.query)
+            hint = format_hint(recalled)
             result: AgentState = await graph.ainvoke(
-                _initial_state(sid, query=resolved_query, document_id=document_id),
+                _initial_state(
+                    sid, query=resolved_query, document_id=document_id,
+                    format_hint=hint,
+                ),
                 config=thread_config(sid),
             )
             answer = result.get("final_answer", "")
