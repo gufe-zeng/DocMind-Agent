@@ -68,9 +68,7 @@ services:
       HTTP_PROXY: ${DOCMIND_PROXY_URL:-}
       HTTPS_PROXY: ${DOCMIND_PROXY_URL:-}
       ALL_PROXY: ${DOCMIND_PROXY_URL:-}
-      NO_PROXY: "localhost,127.0.0.1,postgres,redis,qdrant,api,host.docker.internal"
-      # Default to official Hugging Face; override only when a mirror is verified.
-      HF_ENDPOINT: ${DOCMIND_HF_ENDPOINT:-https://huggingface.co}
+      NO_PROXY: "localhost,127.0.0.1,postgres,redis,qdrant,api,host.docker.internal,modelscope.cn,.modelscope.cn,.aliyuncs.com"
     volumes:
       - documents-data:/app/data/uploads
       - embedding-cache:/app/data/embed_cache
