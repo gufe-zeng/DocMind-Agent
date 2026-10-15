@@ -172,7 +172,7 @@ Cross-Encoder reranking, evidence IDs and OpenAI-compatible LLM generation.
 Implementation details: [docs/M2_GUIDE.md](docs/M2_GUIDE.md) ·
 M1 acceptance evidence: [docs/M1_ACCEPTANCE.md](docs/M1_ACCEPTANCE.md).
 
-## M2b — Reranker + grounded generation (code committed, awaiting acceptance)
+## M2b — Reranker + grounded generation (model/core accepted; live pending)
 
 1. **ModelScope BGE Reranker**: BAAI/bge-reranker-base (ONNX, CPU).
    The initial ~1.11 GB download is considerably larger than the M1 embedding
@@ -193,9 +193,9 @@ scripts\check_reranker.bat
 scripts\check_m2b.bat
 ```
 
-The `check_m2b.bat` command uses real document ingestion/retrieval/reranking
-and a deterministic **mock LLM** to test the citation contract. This does
-*not* mean the live vLLM pipeline has been accepted.
+The 2026-10-15 local logs confirm `check_reranker.bat` and `check_m2b.bat`
+**passed**. The second test uses a controlled mock LLM. The live test is still
+pending because `host.docker.internal:8000` could not be reached.
 
 Once `llm-serving-ops` serves a model on host port 8000, run:
 
@@ -207,8 +207,8 @@ A real answer must contain a valid `[S1]` citation; otherwise the pipeline
 fails closed with `citation_unverified`. M2 remains In Progress until the
 real endpoint works.
 
-See [M2 Guide](docs/M2_GUIDE.md) and
-[M2a Acceptance](docs/M2A_ACCEPTANCE.md) for detailed checks.
+See [M2 Guide](docs/M2_GUIDE.md), [M2b Acceptance](docs/M2B_ACCEPTANCE.md)
+and [M2a Acceptance](docs/M2A_ACCEPTANCE.md) for detailed checks.
 
 ## Related Project
 
