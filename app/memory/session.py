@@ -74,11 +74,18 @@ class SessionStore:
     async def append_turn(
         self, session_id: str, *, document_id: str | None,
         query: str, resolved_query: str, answer: str, status: str,
+        user_id: str | None = None,
     ) -> dict[str, Any]:
         """Called once after successful graph execution, while lock is held."""
         session_id = _session_id(session_id)
         document_id = str(UUID(document_id)) if document_id else None
         existing = await self.read(session_id)
+        if user_id is not None:
+            user_id = str(UUID(user_id))
+        previous_user = existing.get("user_id") if existing else None
+        if previous_user and user_id and previous_user != user_id:
+            raise ValueError("Session user_id cannot change.")
+        user_id = previous_user or user_id
         now = _now()
         session = existing or {
             "session_id": session_id,
@@ -86,6 +93,8 @@ class SessionStore:
             "turns": [],
         }
         session["document_id"] = document_id
+        if user_id is not None:
+            session["user_id"] = user_id
         session["updated_at"] = now
         session["turns"] = [
             *(session.get("turns", [])[-self.max_turns + 1:] if self.max_turns > 1 else []),
