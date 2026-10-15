@@ -20,22 +20,17 @@ from app.rag.reranker import rerank_hits
 from eval.system_eval import AgentTiming, LiveLLMProbe, evaluate_system
 
 
-CONTRACT = (
-    "甲方：M7C测试采购有限公司。\n"
-    "乙方：M7C测试服务有限公司。\n"
-    "付款条款：服务验收合格后，甲方在三十日内支付款项。\n"
-    "违约责任：如果甲方逾期付款，应当按合同约定支付违约金。"
+FIXTURE_PATH = Path(__file__).resolve().parents[1] / "eval" / "datasets" / "m7c_system.json"
+FIXTURE = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+CONTRACT = FIXTURE["document"]["text"]
+STAGE_QUERY = FIXTURE["stage_query"]
+AGENT_CASES = tuple(
+    (
+        item["id"], item["query"], tuple(item["expected_tools"]),
+        tuple(item.get("expected_mcp_tools", [])),
+    )
+    for item in FIXTURE["agent_cases"]
 )
-STAGE_QUERY = "服务验收后三十日内付款及逾期违约金"
-AGENT_CASES = (
-    ("metadata", "查询文档信息", ("query_document_metadata",), ()),
-    ("mcp_clause", "通过MCP查找违约责任条款", ("mcp_find_clause",), ("find_clause",)),
-    ("mcp_search", "通过MCP检索逾期付款违约金", ("mcp_search_documents",),
-     ("search_documents",)),
-    ("mcp_multi", "通过MCP查询文档信息并查找违约责任条款",
-     ("mcp_get_document", "mcp_find_clause"), ("get_document", "find_clause")),
-)
-
 
 async def wait_ready(http: httpx.AsyncClient) -> None:
     loop = asyncio.get_running_loop()
@@ -57,7 +52,7 @@ async def wait_ready(http: httpx.AsyncClient) -> None:
 async def index_fixture(http: httpx.AsyncClient) -> str:
     upload = await http.post(
         "/v1/documents",
-        files={"file": ("m7c_latency.txt", CONTRACT.encode("utf-8"), "text/plain")},
+        files={"file": (FIXTURE["document"]["filename"], CONTRACT.encode("utf-8"), "text/plain")},
     )
     upload.raise_for_status()
     document_id = upload.json()["document_id"]
@@ -169,7 +164,7 @@ async def profile_live_qwen(document_id: str) -> LiveLLMProbe:
     started = perf_counter()
     try:
         response = await pipeline.answer_document_question(
-            "服务验收合格后，甲方应在多少日内付款？", document_id=document_id,
+            FIXTURE["live_question"], document_id=document_id,
         )
     finally:
         pipeline.complete_chat = original_completion
@@ -191,6 +186,7 @@ async def profile_live_qwen(document_id: str) -> LiveLLMProbe:
 
 
 async def main(live: bool) -> None:
+    assert FIXTURE["version"] == 1, "Unknown M7c fixture version"
     async with httpx.AsyncClient(
         base_url="http://127.0.0.1:8000", timeout=600, trust_env=False,
     ) as http:
