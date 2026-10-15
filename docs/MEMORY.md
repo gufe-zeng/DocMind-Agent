@@ -1,14 +1,14 @@
 # DocMind-Agent V1 Memory Design
 
-Status: **M4a code implemented (local acceptance pending); M4b planned**.
+Status: **M4a Completed (2026-10-15); M4b in development**.
 
 The frozen architecture separates four distinct state lifetimes:
 
 | Layer | Storage | Implementation status |
 |---|---|---|
 | Working state | LangGraph AgentState | Implemented M3 |
-| Session history | Redis with TTL | M4a implemented, pending live test |
-| Durable graph checkpoint | LangGraph PostgreSQL AsyncPostgresSaver | M4a implemented, pending live test |
+| Session history | Redis with TTL | M4a completed, live test passed |
+| Durable graph checkpoint | LangGraph PostgreSQL AsyncPostgresSaver | M4a completed, live test passed |
 | Long-term reusable memory | PostgreSQL `memories` + Qdrant `memories_v1` | M4b planned |
 
 ## M4a — Redis short-term session memory

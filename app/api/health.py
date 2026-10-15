@@ -56,7 +56,7 @@ async def health() -> JSONResponse:
 
     payload = {
         "status": "ok" if healthy else "degraded",
-        "stage": "M1",
+        "stage": "M4a",
         "dependencies": dependencies,
     }
 

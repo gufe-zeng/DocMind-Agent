@@ -275,7 +275,7 @@ See [M3 Guide](docs/M3_GUIDE.md).
 
 ## M4a — Redis session history + PostgreSQL LangGraph checkpoints
 
-Status: **code implemented, local acceptance pending**.
+Status: **accepted with a real multi-turn Qwen test on 2026-10-15**.
 
 New behavior preserves recent conversation context under one `session_id`:
 
@@ -305,7 +305,7 @@ docker compose up -d --build api
 scripts\check_m4a.bat
 ```
 
-Expected final line: `M4a PASS`. The script creates a contract, performs
+The observed final output was **`M4a PASS`**. The script creates a contract, performs
 two live-Qwen turns including `如果逾期呢？`, checks that the second turn
 reuses the document, verifies Redis expiry and checks the PostgreSQL
 checkpoint from a separate database connection.
