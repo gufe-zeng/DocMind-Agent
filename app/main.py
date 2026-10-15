@@ -2,6 +2,8 @@
 
 from contextlib import asynccontextmanager
 
+import asyncpg
+
 from fastapi import FastAPI, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from redis.asyncio import Redis
@@ -14,6 +16,7 @@ from app.api.health import router as health_router
 from app.core.config import get_settings
 from app.memory.checkpoint import open_checkpointer
 from app.memory.session import SessionStore
+from app.observability.storage import init_trace_schema
 from app.storage.postgres import init_documents_schema
 
 
@@ -27,6 +30,11 @@ async def lifespan(app: FastAPI):
     await init_memory_schema(settings.postgres_dsn)
     from app.approvals.storage import init_approval_schema
     await init_approval_schema(settings.postgres_dsn)
+    await init_trace_schema(settings.postgres_dsn)
+    trace_pool = await asyncpg.create_pool(
+        dsn=settings.postgres_dsn, min_size=1, max_size=5, timeout=10
+    )
+    app.state.trace_pool = trace_pool
     redis_client = Redis.from_url(
         settings.redis_url,
         decode_responses=True,
@@ -48,6 +56,7 @@ async def lifespan(app: FastAPI):
             yield
     finally:
         await redis_client.aclose()
+        await trace_pool.close()
 
 
 app = FastAPI(
@@ -68,7 +77,7 @@ async def root() -> dict[str, str]:
     return {
         "service": settings.app_name,
         "version": "0.1.0",
-        "stage": "M6",
+        "stage": "M8",
         "status": "running",
     }
 

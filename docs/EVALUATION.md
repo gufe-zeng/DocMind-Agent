@@ -1,6 +1,6 @@
 # M7 — Evaluation
 
-Status (2026-10-15): **M7a and M7b Completed via local Docker validation; M7c implemented, local BASE/LIVE validation pending.**
+Status (2026-10-15): **M7a, M7b and M7c Completed via local Docker validation.**
 
 M7 reuses the frozen V1 interfaces and does **not** add a public API.
 Synthetic smoke tests are evidence of a functioning evaluation pipeline,
@@ -74,7 +74,7 @@ selection metrics at 1.0, eight observed tool calls with Tool Success Rate=1.0,
 Average Agent Steps=1.1428571428571428 and Failure Rate=0.
 See [M7b acceptance](M7B_ACCEPTANCE.md).
 
-## M7c — System evaluation (implementation available; local acceptance pending)
+## M7c — System evaluation (accepted 2026-10-15)
 
 Runners: `scripts\\check_m7c.bat` (BASE, no Qwen) and
 `scripts\\check_m7c_live.bat` (BASE plus real Qwen probe).
@@ -140,9 +140,7 @@ M7c SYSTEM LIVE PASS
 M7c system live validation passed.
 ```
 
-**Acceptance rule:** Do not mark M7c Completed until both BASE and LIVE
-have actually passed on the local Docker environment. The top-level
-`scripts/run_eval.bat` remains reserved until M7 acceptance.
+**Accepted on 2026-10-15:** both BASE and LIVE passed locally, with four serial Agent requests and five tool calls per run; separate Qwen probe returned one model call and measured token usage. See [M7c acceptance](M7C_ACCEPTANCE.md). The top-level `scripts/run_eval.bat` remains reserved for a future combined evaluation runner.
 
 ## General boundaries
 
@@ -150,3 +148,8 @@ have actually passed on the local Docker environment. The top-level
 - Deterministic checks cannot establish semantic faithfulness.
 - Shared Qdrant makes performance metrics dependent on historical data.
 - No production-level throughput or concurrency claims from these smoke tests.
+
+
+**M7 synthesis:** The three staged evaluation gates are accepted as local
+synthetic smoke evidence only. Their 100% task metrics do not establish
+real-document performance, semantic faithfulness, or production latency.

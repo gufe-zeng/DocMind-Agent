@@ -14,6 +14,7 @@ from threading import Lock
 from fastembed.rerank.cross_encoder import TextCrossEncoder
 
 from app.rag.retriever import RetrievalHit
+from app.observability.tracing import timed_rerank
 
 
 RERANKER_MODEL = "BAAI/bge-reranker-base"
@@ -92,6 +93,7 @@ def _load_reranker(model_name: str, cache_dir: str) -> TextCrossEncoder:
     )
 
 
+@timed_rerank
 def rerank_hits(
     query: str,
     hits: list[RetrievalHit],

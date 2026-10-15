@@ -338,3 +338,16 @@ This demo is unauthenticated; do not treat UUID fields as real permission
 checks or deploy the API publicly.
 
 Local acceptance **passed**: `scripts\check_m6b.bat` (includes real API restart). See [M6b Acceptance](M6B_ACCEPTANCE.md).
+
+
+## M8 — Backward-compatible trace identifiers (local acceptance pending)
+
+Responses from `POST /v1/chat` include a `trace_id` UUID in addition to
+the existing `request_id` and `session_id`. Approval decisions through
+the existing `POST /v1/approvals/{approval_id}` also include new
+`request_id` and `trace_id` fields. Trace metadata is held in
+PostgreSQL, **not** exposed via a new unauthenticated trace-read endpoint.
+
+Metrics remain available at `GET /metrics`; raw prompts and evidence
+text are never Prometheus labels or persisted trace fields. These fields
+are additions only, with no change to the accepted M6b write/decision rules.

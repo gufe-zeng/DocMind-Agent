@@ -17,6 +17,7 @@ from app.rag.citation import (
 )
 from app.rag.reranker import rerank_hits
 from app.rag.retriever import hybrid_search
+from app.observability.tracing import timed_rag
 
 
 SYSTEM_INSTRUCTIONS = (
@@ -47,6 +48,7 @@ def normalize_question(question: str) -> str:
     return " ".join(question.strip().split())
 
 
+@timed_rag
 async def answer_document_question(
     question: str,
     *,

@@ -446,3 +446,21 @@ POST /v1/chat — explicit save-review-note command
 
 Readonly M6a timeout/retry policies **never** execute protected writes.
 The demo's user/session UUIDs do not replace authentication or RBAC.
+
+
+## M8 — Actual observability implementation (awaiting Docker acceptance)
+
+Each validated `POST /v1/chat` and HITL decision receives a distinct
+`trace_id` with `request_id` and `session_id`. Request-local contextvars
+attach actual node/tool timings to the corresponding concurrent request
+without altering the LangGraph PostgreSQL checkpoint state. The
+`agent_traces` table (migration 004) stores only sanitized execution
+metadata and optional provider-reported token counts. The existing
+`GET /metrics` exports fixed-label Prometheus counters and histograms.
+Optional, isolated Prometheus/Grafana Compose files provide dashboards;
+they are not needed for core Agent functionality.
+
+M8 makes no production distributed-tracing, authentication, or data-
+retention claims. The source-only Docker rebuild path caches third-party
+dependencies before copying Python app source. Details:
+[Observability guide](OBSERVABILITY.md).

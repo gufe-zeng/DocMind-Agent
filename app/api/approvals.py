@@ -20,6 +20,7 @@ from app.approvals.storage import (
 )
 from app.memory.checkpoint import thread_config
 from app.memory.session import SessionBusyError
+from app.observability.tracing import observed_endpoint
 
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,8 @@ class ApprovalDecisionRequest(BaseModel):
 
 
 class ApprovalDecisionResponse(BaseModel):
+    request_id: UUID | None = None
+    trace_id: UUID | None = None
     approval_id: UUID
     session_id: UUID
     status: Literal["approved", "rejected"]
@@ -65,6 +68,7 @@ def _approved_response(row: dict, *, completed: bool) -> ApprovalDecisionRespons
     "/approvals/{approval_id}",
     response_model=ApprovalDecisionResponse,
 )
+@observed_endpoint("approval")
 async def decide_review_note(
     approval_id: UUID,
     body: ApprovalDecisionRequest,

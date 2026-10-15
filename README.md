@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-**M0–M6 已于 2026-10-15 完成本地功能验收。** 下一步优先开展完整业务场景演示，并推进 M7–M9 评测、可观测性与工程收尾。此验收不等于生产就绪。
+**M0–M7 已通过本地功能和合成评测验收；M8 可观测性实现已提交，等待一次本机 Docker 验收。** 本地验收不代表生产就绪。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -80,8 +80,8 @@ scripts\smoke_test.bat
 | M4 | Session/Long-term Memory + Checkpoint | Completed (2026-10-15) |
 | M5 | MCP Server + Client | Completed (2026-10-15) |
 | M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
-| M7 | RAG/Agent/System Eval | In progress: M7a/M7b Completed; M7c pending local acceptance |
-| M8 | Agent Metrics + Trace | Planned |
+| M7 | RAG/Agent/System Eval | Completed: M7a/M7b/M7c synthetic local gates (2026-10-15) |
+| M8 | Agent Metrics + Trace | Implemented; one local Docker acceptance pending |
 | M9 | Engineering wrap-up + Demo + Resume | Planned |
 
 ## M1a — Parse and chunk documents
@@ -544,3 +544,43 @@ scripts\\check_m7c_live.bat
 Expected: `M7c SYSTEM LIVE PASS`.
 Both live Docker gates are required before marking M7c Completed.
 See [Evaluation design](docs/EVALUATION.md).
+
+
+## M7c — System evaluation (accepted 2026-10-15)
+
+Both BASE and LIVE local Docker checks passed. Four real serial HTTP requests
+per run had zero failures; five read-only tool events per run were complete.
+The separate in-container BGE CPU reranker timings were **259.30 s** (BASE)
+and **171.97 s** (LIVE). The direct Qwen RAG probe used one call
+(241 prompt tokens, 16 completion tokens). These stage timings are NOT
+Agent HTTP node-attributed or concurrency results. See
+[the recorded M7c acceptance](docs/M7C_ACCEPTANCE.md).
+
+## M8 — Metrics, durable request/node traces and faster rebuilds
+
+The M8 implementation adds request and trace UUIDs, LangGraph node
+timestamps/statuses, M6 tool-event durations, Prometheus metrics,
+PostgreSQL `agent_traces` and privacy-safe logs. The existing
+`/v1/chat`, `/v1/approvals/{approval_id}` and `/metrics` endpoints
+are reused; no new public trace-read API is introduced.
+
+The Dockerfile now installs third-party packages **before copying app source**.
+The first rearranged image build may still be slow, but subsequent
+source-only builds with unchanged `pyproject.toml` should reuse the
+expensive dependency layer. Do not use `--no-cache`.
+
+Run the **single** M8 local acceptance sequence in Windows CMD:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m8.bat
+```
+
+The script automatically tests real Agent/MCP/HITL traces, restarts
+**only the API container** and checks that PostgreSQL trace data persists.
+The restart does not rebuild the API image; Qwen is not required.
+Expected: `M8 OBSERVABILITY PASS`.
+See [M8 guide](docs/OBSERVABILITY.md) for optional Grafana on local ports
+3091/9091 without another API rebuild. **M8 is not yet locally accepted.**

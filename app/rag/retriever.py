@@ -21,6 +21,7 @@ from app.rag.embedder import embed_texts
 from app.rag.fusion import reciprocal_rank_fusion
 from app.rag.sparse import bm25_rank
 from app.storage.qdrant import DOCUMENTS_COLLECTION
+from app.observability.tracing import timed_retrieval
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,6 +90,7 @@ async def _read_corpus(
     return corpus
 
 
+@timed_retrieval
 async def hybrid_search(
     query: str,
     *,

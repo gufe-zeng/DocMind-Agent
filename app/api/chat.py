@@ -16,6 +16,7 @@ from app.approvals.storage import create_approval
 from app.memory.checkpoint import thread_config
 from app.memory.long_term import format_hint, is_memory_command, parse_format_preference
 from app.memory.session import SessionBusyError, resolve_followup
+from app.observability.tracing import observed_endpoint
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     request_id: UUID
+    trace_id: UUID | None = None
     session_id: UUID
     status: str
     intent: str
@@ -99,6 +101,7 @@ def _initial_state(
 
 
 @router.post("/chat", response_model=ChatResponse)
+@observed_endpoint("chat")
 async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
     session_id = request.session_id or uuid4()
     request_id = uuid4()

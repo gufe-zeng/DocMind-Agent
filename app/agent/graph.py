@@ -14,14 +14,15 @@ from app.agent.nodes import (
     synthesize_node,
 )
 from app.agent.state import AgentState
+from app.observability.tracing import observed_graph_node
 
 
 def build_agent_graph(checkpointer=None, *, interrupt_before=None):
     flow = StateGraph(AgentState)
-    flow.add_node("route", route_node)
-    flow.add_node("decide", decide_node)
-    flow.add_node("call_tool", call_tool_node)
-    flow.add_node("synthesize", synthesize_node)
+    flow.add_node("route", observed_graph_node("route", route_node))
+    flow.add_node("decide", observed_graph_node("decide", decide_node))
+    flow.add_node("call_tool", observed_graph_node("call_tool", call_tool_node))
+    flow.add_node("synthesize", observed_graph_node("synthesize", synthesize_node))
 
     flow.add_edge(START, "route")
     flow.add_edge("route", "decide")

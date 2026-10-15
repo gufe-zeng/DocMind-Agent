@@ -1,0 +1,154 @@
+{
+  "id": null,
+  "uid": "docmind-agent-m8",
+  "title": "DocMind-Agent M8 Observability",
+  "tags": [
+    "docmind",
+    "agent",
+    "m8"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Agent requests/s",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum by (operation) (rate(agent_requests_total[5m]))",
+          "legendFormat": "{{operation}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Agent successful / failures",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(agent_success_total[5m]))",
+          "legendFormat": "success/s",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(agent_failures_total[5m]))",
+          "legendFormat": "failure/s",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Agent E2E p95 (s)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(agent_e2e_latency_seconds_bucket[5m])))",
+          "legendFormat": "{{operation}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Tool p95 (s)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, tool) (rate(tool_latency_seconds_bucket[5m])))",
+          "legendFormat": "{{tool}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "RAG retrieval/rerank/total p95 (s)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(retrieval_latency_seconds_bucket[5m])))",
+          "legendFormat": "retrieval",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(rerank_latency_seconds_bucket[5m])))",
+          "legendFormat": "rerank",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(rag_latency_seconds_bucket[5m])))",
+          "legendFormat": "RAG",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Tool failures/s and LLM calls/s",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "sum by (tool) (rate(tool_failures_total[5m]))",
+          "legendFormat": "failed: {{tool}}",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(llm_calls_total[5m])",
+          "legendFormat": "LLM calls",
+          "refId": "B"
+        }
+      ]
+    }
+  ]
+}

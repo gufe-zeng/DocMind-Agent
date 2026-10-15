@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 import httpx
 
+from app.observability.tracing import record_llm_attempt, record_llm_completion, record_llm_failure
+
 
 @dataclass(frozen=True, slots=True)
 class LLMResult:
@@ -48,26 +50,33 @@ async def complete_chat(
     headers = {"Authorization": f"Bearer {api_key or 'EMPTY'}"}
     endpoint = base_url.rstrip("/") + "/chat/completions"
 
+    record_llm_attempt()
     try:
         async with httpx.AsyncClient(timeout=timeout_seconds, trust_env=False) as client:
             response = await client.post(endpoint, json=payload, headers=headers)
             response.raise_for_status()
             body = response.json()
     except (httpx.HTTPError, ValueError) as exc:
+        record_llm_failure()
         raise LLMServiceError(f"Unable to call LLM at {endpoint}: {exc}") from exc
 
     choices = body.get("choices", []) if isinstance(body, dict) else []
     if not choices or not isinstance(choices[0], dict):
+        record_llm_failure()
         raise LLMServiceError("LLM returned no choices.")
     message = choices[0].get("message") or {}
     text = message.get("content") if isinstance(message, dict) else None
     if not isinstance(text, str) or not text.strip():
+        record_llm_failure()
         raise LLMServiceError("LLM returned an empty answer.")
     usage = body.get("usage") or {}
     if not isinstance(usage, dict):
         usage = {}
+    prompt_tokens = _usage_value(usage, "prompt_tokens")
+    completion_tokens = _usage_value(usage, "completion_tokens")
+    record_llm_completion(prompt_tokens, completion_tokens)
     return LLMResult(
         text=text.strip(),
-        prompt_tokens=_usage_value(usage, "prompt_tokens"),
-        completion_tokens=_usage_value(usage, "completion_tokens"),
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
     )
