@@ -93,6 +93,7 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
     sid = str(session_id)
     store = http_request.app.state.session_store
     graph = http_request.app.state.agent_graph
+    memory = http_request.app.state.long_term_memory
 
     try:
         async with store.lock(sid):
