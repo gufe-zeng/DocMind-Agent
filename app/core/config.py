@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     upload_dir: str = "/app/data/uploads"
     embedding_cache_dir: str = "/app/data/embed_cache"
     embedding_model: str = "BAAI/bge-small-zh-v1.5"
+    reranker_model: str = "BAAI/bge-reranker-base"
+    rag_candidate_k: int = 8
+    rag_evidence_k: int = 2
+    rag_max_evidence_chars: int = 160
+    rag_max_answer_tokens: int = 128
     embedding_vector_size: int = 512
     max_upload_bytes: int = 10 * 1024 * 1024
     max_chunks_per_document: int = 1000

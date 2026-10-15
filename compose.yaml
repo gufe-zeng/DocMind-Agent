@@ -62,6 +62,11 @@ services:
       EMBEDDING_CACHE_DIR: /app/data/embed_cache
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-small-zh-v1.5}
       EMBEDDING_VECTOR_SIZE: '512'
+      RERANKER_MODEL: ${RERANKER_MODEL:-BAAI/bge-reranker-base}
+      RAG_CANDIDATE_K: '8'
+      RAG_EVIDENCE_K: '2'
+      RAG_MAX_EVIDENCE_CHARS: '160'
+      RAG_MAX_ANSWER_TOKENS: '128'
       MAX_UPLOAD_BYTES: '10485760'
       # Optional runtime proxy for downloads from inside the Linux container.
       # Docker Desktop's host.docker.internal refers to the Windows host.
