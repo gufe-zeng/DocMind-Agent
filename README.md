@@ -102,18 +102,20 @@ Details: [M1 Guide](docs/M1_GUIDE.md) · [M0 Acceptance](docs/M0_ACCEPTANCE.md)
 ## M1b — Upload, embed and index in Qdrant
 
 The CPU BGE model is downloaded from **ModelScope**, using a compatible
- community-maintained ONNX conversion. FastEmbed then runs strictly from its
- local cache; the first indexing run does not call Hugging Face:
+community-maintained ONNX conversion. FastEmbed then runs strictly from its
+local cache; the first indexing run does not call Hugging Face:
 
 - ModelScope repository: https://modelscope.cn/models/lyf219/bge-small-zh-v1.5-onnx
 - Original model: `BAAI/bge-small-zh-v1.5`; vector dimension: 512
 - Runtime: ONNX CPU (no PyTorch GPU dependency)
 
-First run:
+First run (on Windows CMD):
 
 ```cmd
+cd /d E:\project\DocMind-Agent
 git pull
-docker compose up -d --build
+docker compose up -d --build api
+scripts\check_modelscope.bat
 scripts\check_m1b.bat
 ```
 
