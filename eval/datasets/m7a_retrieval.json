@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "description": "Synthetic contract retrieval gold by fixture key, isolated from existing indexed corpus by temporary UUID mapping.",
+  "documents": [
+    {
+      "key": "payment",
+      "filename": "m7_payment.txt",
+      "text": "合同付款期限：甲方应在服务验收合格后三十日内支付全部款项。付款以验收报告为依据。"
+    },
+    {
+      "key": "breach",
+      "filename": "m7_breach.txt",
+      "text": "违约责任：未按时交付服务的一方，应按合同约定承担违约责任。"
+    },
+    {
+      "key": "delivery",
+      "filename": "m7_delivery.txt",
+      "text": "履约交付期限：乙方在合同生效后六十日内交付技术报告。"
+    }
+  ],
+  "cases": [
+    {
+      "query": "服务验收合格后多少日内付款？",
+      "gold": [
+        "payment"
+      ]
+    },
+    {
+      "query": "未按时交付服务的违约责任是什么？",
+      "gold": [
+        "breach"
+      ]
+    },
+    {
+      "query": "合同生效后多久交付技术报告？",
+      "gold": [
+        "delivery"
+      ]
+    }
+  ]
+}
