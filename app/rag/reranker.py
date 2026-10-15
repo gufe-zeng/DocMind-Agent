@@ -11,7 +11,7 @@ import math
 from pathlib import Path
 from threading import Lock
 
-from fastembed import TextCrossEncoder
+from fastembed.rerank.cross_encoder import TextCrossEncoder
 
 from app.rag.retriever import RetrievalHit
 
