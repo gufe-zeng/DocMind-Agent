@@ -45,7 +45,7 @@ Metrics:
 | MCP Tool Selection Accuracy | Exact match of reported MCP protocol-tool sequence to the expected MCP list. |
 | Tool Success Rate | Successful `tool_events` (status `ok`, aligned by tool and bounded attempts) divided by observed read-only tool calls. Missing events count as failures; no observed attempts yields `null`. |
 | Average Agent Steps | Mean valid `steps` among HTTP-successful responses that report steps, excluding unavailable responses; count reported separately. |
-| Failure Rate | Fraction with failed HTTP/transport or explicit `partial`, `tool_unavailable`, `citation_unverified`, `step_limit`, etc. Distinct from (1 - \text{Task Success Rate}). |
+| Failure Rate | Fraction with failed HTTP/transport or explicit `partial`, `tool_unavailable`, `citation_unverified`, `step_limit`, etc. Distinct from the complement of Task Success Rate. |
 
 Source checks require real document/chunk IDs, legal `[S#]` source
 identifiers and matching document/page scope. This evaluates deterministic
