@@ -1,6 +1,8 @@
 # DocMind-Agent 简历项目与面试讲述（证据版）
 
 > **源码学习入口**：[完整中文项目学习手册](LEARNING_GUIDE_CN.md)（21 章、58 道 Agent/RAG 高频问答、代码跟踪、实战练习与排障）。
+>
+> **高频追问补充**：[2026 Agent 开发面试精选 28 题](AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md)——以公开面经与官方资料核对，优先练习 Context Engineering、工具路由、评测和系统设计。
 
 > 适用于 Agent / LLM 应用 / RAG 工程岗位。M0–M9 已完成本地合成任务功能验收，包括真实 Qwen 的 M9 LIVE 问答；但 Grafana 面板与正式镜像重建仍待独立核查。不要写“产品上线”“生产级”“大规模部署”或编造收益。
 

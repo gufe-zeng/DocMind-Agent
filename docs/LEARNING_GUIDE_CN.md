@@ -6,6 +6,8 @@
 
 推荐先浏览 [中文 README](../README_CN.md)。学习时不需要重复运行耗时的 BGE/Qwen 完整测试：大部分章节可静态阅读源码及单元测试。
 
+**新增面试专项**：[2026 Agent 开发高频补充精选（28 题，P0/P1）](AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md)。本手册原有 58 道题主要讲基础与项目实现；补充文档专攻公开面经中的 Context、Harness、多 Agent、工具爆炸、评测与系统设计，不建议重复背概念。
+
 **真实性说明**：M0–M9 核心功能已通过合成任务的本地验收；Grafana 看板未独立验收，最新修复版 Docker 镜像因 Docker Hub 代理问题未完成干净重建，M9 LIVE 是从现有容器中的更新源码通过的。**这是求职学习用工程原型，不是生产法律服务。**
 
 ## 目录
@@ -1595,6 +1597,7 @@ docker compose exec -T postgres psql -U docmind -d docmind -c "SELECT status, ll
 - [正式发布仍待办](RELEASE_CHECKLIST.md)：Grafana 和干净镜像构建。
 - [API 字段细节](API.md)、[MCP 专题](MCP.md)、[记忆专题](MEMORY.md)、[可靠性专题](RELIABILITY.md)。
 - [现有简历与面试资料](RESUME_PROJECT.md)：把工程能力写成可追问且有证据的经历。
+- [2026 Agent 开发面试高频精选补充（28 题）](AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md)：18 道 P0、10 道 P1、四个场景题与面经/官方技术来源。
 
 ### 21.3 最后的学习检查清单
 

@@ -1,6 +1,6 @@
 # DocMind-Agent
 
-**Language / 语言**：[中文 README](README_CN.md) · [中文项目学习手册（21 章，含 58 个 Agent/RAG 面试问答）](docs/LEARNING_GUIDE_CN.md) · [原版 README / Original guide](README.md)
+**Language / 语言**：[中文 README](README_CN.md) · [中文项目学习手册（21 章，含 58 个 Agent/RAG 面试问答）](docs/LEARNING_GUIDE_CN.md) · [2026 Agent 面试高频补充（28 题）](docs/AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md) · [原版 README / Original guide](README.md)
 
 > 面向复杂文档的可追溯 RAG Agent 系统。
 

@@ -1,4 +1,4 @@
-> **更新提示（2026-10-15）**：本文件的部分里程碑文字来自早期 M3/M6 开发过程，已不再反映最终验收状态。M0–M9 核心功能目前已通过本地验收。请以 [完整中文源码学习与面试手册](LEARNING_GUIDE_CN.md)、[当前简历证据版](RESUME_PROJECT.md) 和 [M9 验收记录](M9_ACCEPTANCE.md) 为准；下方内容保留作历史阅读资料。
+> **更新提示（2026-10-15）**：本文件的部分里程碑文字来自早期 M3/M6 开发过程，已不再反映最终验收状态。M0–M9 核心功能目前已通过本地验收。请以 [完整中文源码学习与面试手册](LEARNING_GUIDE_CN.md)、[2026 Agent 面试高频精选补充](AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md)、[当前简历证据版](RESUME_PROJECT.md) 和 [M9 验收记录](M9_ACCEPTANCE.md) 为准；下方内容保留作历史阅读资料。
 
 # Interview Framing
 

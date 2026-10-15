@@ -1,6 +1,6 @@
 # DocMind-Agent｜复杂文档知识 Agent（中文说明）
 
-[原版 README](README.md) · **[完整中文学习手册](docs/LEARNING_GUIDE_CN.md)** · [API 说明](docs/API.md) · [M9 验收记录](docs/M9_ACCEPTANCE.md) · [简历项目材料](docs/RESUME_PROJECT.md)
+[原版 README](README.md) · **[完整中文学习手册](docs/LEARNING_GUIDE_CN.md)** · **[2026 Agent 面试精选补充（28 题）](docs/AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md)** · [API 说明](docs/API.md) · [M9 验收记录](docs/M9_ACCEPTANCE.md) · [简历项目材料](docs/RESUME_PROJECT.md)
 
 > 一个面向合同、法律及政务类**文本**文档的本地 RAG + LangGraph Agent 工程项目。目标是展示可追溯的文档问答、可控工具调用、状态记忆、MCP、人工审批、评测与可观测性，而非生产级法律意见服务。
 
@@ -156,6 +156,7 @@ scripts\check_m9_live.bat
 ## 8. 学习与面试资料
 
 - **[详细项目学习手册（中文）](docs/LEARNING_GUIDE_CN.md)**：从 HTTP/Python/状态机/RAG 基础讲起，逐步分析真实源码、工具生命周期、记忆、MCP、HITL、追踪、评测，包含自测练习、Agent 高频面试问答和错误排查。
+- **[Agent 开发面试高频补充（2026 精选）](docs/AGENT_INTERVIEW_HIGH_FREQUENCY_SUPPLEMENT_CN.md)**：额外 28 题，聚焦 Context Engineering、Harness、多 Agent、动态工具路由、MCP/Skills/A2A、真实评测和系统设计追问。
 - [项目冻结需求](docs/REQUIREMENTS.md) · [架构设计](docs/ARCHITECTURE.md) · [API 契约](docs/API.md)。
 - [最终 M9 验收记录](docs/M9_ACCEPTANCE.md) · [发布剩余项](docs/RELEASE_CHECKLIST.md) · [简历项目介绍](docs/RESUME_PROJECT.md)。
 - [MCP 专题](docs/MCP.md) · [记忆专题](docs/MEMORY.md) · [可靠性与审批专题](docs/RELIABILITY.md)。
