@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 10 * 1024 * 1024
     max_chunks_per_document: int = 1000
 
+    session_ttl_seconds: int = 3600
+    session_max_turns: int = 6
+    session_lock_seconds: int = 300
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -1,7 +1,7 @@
-"""M3a StateGraph with explicit conditional edges and bounded tool loops.
+"""Compiled LangGraph graph with an optional durable checkpointer.
 
-No Memory/checkpointer yet: M4 implements session, long-term and durable
-graph checkpoints. This graph is per-request and does not remember history.
+M4a binds PostgreSQL AsyncPostgresSaver in the FastAPI lifespan.
+Tests may compile a transient graph without persistence.
 """
 
 from langgraph.graph import END, START, StateGraph
@@ -16,7 +16,7 @@ from app.agent.nodes import (
 from app.agent.state import AgentState
 
 
-def build_agent_graph():
+def build_agent_graph(checkpointer=None):
     flow = StateGraph(AgentState)
     flow.add_node("route", route_node)
     flow.add_node("decide", decide_node)
@@ -32,7 +32,7 @@ def build_agent_graph():
     )
     flow.add_edge("call_tool", "decide")
     flow.add_edge("synthesize", END)
-    return flow.compile()
+    return flow.compile(checkpointer=checkpointer)
 
 
 agent_graph = build_agent_graph()

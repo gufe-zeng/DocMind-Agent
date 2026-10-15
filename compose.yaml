@@ -67,6 +67,10 @@ services:
       RAG_EVIDENCE_K: '2'
       RAG_MAX_EVIDENCE_CHARS: '160'
       RAG_MAX_ANSWER_TOKENS: '128'
+      SESSION_TTL_SECONDS: '3600'
+      SESSION_MAX_TURNS: '6'
+      SESSION_LOCK_SECONDS: '300'
+      LANGGRAPH_STRICT_MSGPACK: 'true'
       MAX_UPLOAD_BYTES: '10485760'
       # Optional runtime proxy for downloads from inside the Linux container.
       # Docker Desktop's host.docker.internal refers to the Windows host.
