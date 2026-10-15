@@ -8,6 +8,8 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY app ./app
 COPY mcp_server ./mcp_server
+COPY eval ./eval
+COPY scripts/check_m7a.py ./scripts/check_m7a.py
 COPY scripts/check_document_pipeline.py ./scripts/check_document_pipeline.py
 COPY scripts/check_m1b.py ./scripts/check_m1b.py
 COPY scripts/check_m2a.py ./scripts/check_m2a.py
