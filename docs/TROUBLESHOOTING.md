@@ -158,3 +158,47 @@ Expected backend: `binary`. Do not delete Docker volumes or reinstall
 PostgreSQL. In particular, **never** run `docker compose down -v` for this
 issue: the Docker volumes contain prior indexed documents, Qdrant vectors,
 Redis and PostgreSQL state, and cached model weights.
+
+## M5b: ConnectError before the first Agent/MCP request
+
+Observed after an API rebuild on 2026-10-15:
+
+```text
+httpx.ConnectError: All connection attempts failed
+scripts/check_m5b.py -> POST /v1/documents
+```
+
+This failure happens **before** `tools/list` or `tools/call`: it is not
+evidence of an MCP protocol failure. The M5b smoke script is executed
+**inside** the API service via `docker compose exec -T api`, where its
+`http://127.0.0.1:8000` target is correct. Port `8090` is for Windows
+host access; `8000` is the container's Uvicorn listener.
+
+After `docker compose up -d --build api`, container startup and FastAPI
+readiness may not be simultaneous. `scripts/check_m5b.py` now polls
+`/health` for up to 90 seconds *before* indexing fixtures. This is a
+potential startup-race mitigation; if the problem persists, inspect the
+network/listener rather than claiming it was a race.
+
+From Windows CMD:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+docker compose ps
+curl --noproxy "*" http://127.0.0.1:8090/health
+docker compose exec -T api python -c "import httpx; r=httpx.get('http://127.0.0.1:8000/health',timeout=10,trust_env=False); print(r.status_code,r.text[:300])"
+docker compose logs --tail 100 api
+```
+
+Note: `docker compose logs --tail 100 api.` (with a period after `api`)
+looks up a non-existent service named `api.`. Use exactly `api`.
+
+If host `/health` and in-container `/health` both work, rerun only:
+
+```cmd
+scripts\check_m5b.bat
+```
+
+If the new readiness gate still fails, share `docker compose ps` and
+`docker compose logs --tail 100 api`. Do not remove persistent volumes
+or change ports solely based on this ConnectError.
