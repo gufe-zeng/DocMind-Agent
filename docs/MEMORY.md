@@ -1,6 +1,6 @@
 # DocMind-Agent V1 Memory Design
 
-Status: **M4a Completed (2026-10-15); M4b in development**.
+Status: **M4a Completed; M4b implemented, awaiting local tests**.
 
 The frozen architecture separates four distinct state lifetimes:
 
@@ -9,7 +9,7 @@ The frozen architecture separates four distinct state lifetimes:
 | Working state | LangGraph AgentState | Implemented M3 |
 | Session history | Redis with TTL | M4a completed, live test passed |
 | Durable graph checkpoint | LangGraph PostgreSQL AsyncPostgresSaver | M4a completed, live test passed |
-| Long-term reusable memory | PostgreSQL `memories` + Qdrant `memories_v1` | M4b planned |
+| Long-term reusable memory | PostgreSQL `memories` + Qdrant `memories_v1` | M4b code ready, awaiting tests |
 
 ## M4a — Redis short-term session memory
 
@@ -53,13 +53,13 @@ curl --noproxy "*" http://127.0.0.1:8090/v1/sessions/SESSION_ID_FROM_M4A_OUTPUT
 
 Expect the same recent turns while the Redis TTL has not expired.
 
-## M4b — planned, not implemented
+## M4b — implemented, pending local acceptance
 
-- Store only **explicitly requested** reusable user preferences and confirmed facts, not arbitrary dialogue snippets.
-- PostgreSQL structured memory with provenance and timestamps.
-- `memories_v1` Qdrant semantic recall with per-user scope and no cross-user leakage.
+- Store only explicitly requested contract-analysis output formats (whitelisted fields); no arbitrary user facts or dialogue snippets.
+- PostgreSQL `memories` source-of-truth with user UUID, content, timestamps and indexing state.
+- Qdrant `memories_v1` semantic recall with filtered user UUID and matching PostgreSQL authorization scope.
 - Document-derived text remains in the source document store, never promoted automatically into personal long-term memory.
-- Validate real checkpoint resume after a deliberate graph interruption.
+- Verify checkpoint resume after an interruption before a read-only tool using a new PostgreSQL connection.
 - Consider permission checks, memory deletion/retention, and session-summary consolidation; do not assert production security without them.
 
 ## Security and scope
@@ -68,3 +68,27 @@ M4a is a **local developer demo** with no authentication, authorization or
 session ownership verification. A known session UUID can retrieve its recent
 answers. Do not expose host port 8090 on an untrusted/public network.
 PostgreSQL checkpoint retention is separate from Redis TTL expiry.
+
+## M4b acceptance instructions
+
+The existing `POST /v1/chat` accepts an optional `user_id` UUID.
+An explicit memory command such as
+`请记住：以后合同分析按“主体、金额、期限、风险、引用”格式输出。`
+saves only recognized output labels. A new session with the same `user_id`
+can recall the preference and pass an output-format hint to RAG.
+
+```cmd
+git pull
+docker compose up -d --build api
+scripts\check_m4b.bat
+scripts\check_m4b_resume.bat
+```
+
+The first script checks PostgreSQL and Qdrant persistence, cross-session
+recall, idempotent upsert and a second user's empty search result.
+The second script interrupts LangGraph before a read-only tool, reloads
+the checkpoint using another connection, and resumes pending work.
+
+This is a **local-only demonstration**: the caller-provided `user_id`
+is not authenticated. It must not be considered multi-user access control.
+Session summary compaction and general confirmed-fact memory are still absent.
