@@ -19,6 +19,9 @@ jobs:
           cache: pip
       - name: Install project and test dependencies
         run: python -m pip install -e ".[dev]"
+      - name: Verify psycopg binary implementation
+        run: |
+          PSYCOPG_IMPL=binary python -c "from psycopg import pq; from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver; assert pq.__impl__ == 'binary', pq.__impl__; print('psycopg binary driver OK')"
       - name: Compile project
         run: python -m compileall -q app mcp_server scripts
       - name: Run unit tests

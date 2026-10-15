@@ -120,3 +120,41 @@ that the full ONNX file, tokenizer and CPU runtime are working.
 For a community ONNX distribution, record and pin the model revision/hash
 when promoting the project beyond the learning environment. The repository
 does not silently fall back to Hugging Face when ModelScope fails.
+
+
+## M4a: psycopg `no pq wrapper available` in python:3.12-slim
+
+Reported on 2026-10-15 after `docker compose up -d --build api`:
+
+```text
+ImportError: no pq wrapper available.
+- No module named 'psycopg_c'
+- No module named 'psycopg_binary'
+- libpq library not found
+```
+
+The application container exits at startup because the official LangGraph
+`AsyncPostgresSaver` imports Psycopg 3. Psycopg's pure-Python implementation
+still requires the system `libpq` shared library, which is absent from the
+minimal base image. This is a missing **client library**, not a PostgreSQL
+server outage.
+
+**Fix committed:** `pyproject.toml` explicitly requires
+`psycopg[binary]>=3.2,<4`; the Dockerfile checks its native binary backend
+during image build. The CI pipeline separately enforces `PSYCOPG_IMPL=binary`.
+
+In Windows CMD:
+
+```cmd
+cd /d E:\\project\\DocMind-Agent
+git pull
+docker compose up -d --build api
+docker compose ps
+docker compose exec -T api python -c "from psycopg import pq; print(pq.__impl__)"
+scripts\\check_m4a.bat
+```
+
+Expected backend: `binary`. Do not delete Docker volumes or reinstall
+PostgreSQL. In particular, **never** run `docker compose down -v` for this
+issue: the Docker volumes contain prior indexed documents, Qdrant vectors,
+Redis and PostgreSQL state, and cached model weights.

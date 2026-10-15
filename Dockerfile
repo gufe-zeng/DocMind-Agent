@@ -22,6 +22,9 @@ COPY data/samples ./data/samples
 
 RUN pip install --no-cache-dir .
 
+# Fail image build if the psycopg native backend cannot load in slim Linux.
+RUN python -c "from psycopg import pq; from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver; assert pq.__impl__ == 'binary', pq.__impl__; print('psycopg binary driver OK')"
+
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
