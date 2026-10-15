@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import json
 import re
 
+from app.approvals.policy import is_review_note_command, parse_review_note
 from app.core.config import get_settings
 from app.llm.client import complete_chat
 
@@ -48,6 +49,9 @@ def select_tool_plan(query: str) -> list[str]:
     """Produce a safe default plan from explicitly recognized intents."""
     if not query.strip():
         raise ValueError("Query cannot be empty.")
+    if is_review_note_command(query):
+        parse_review_note(query)
+        return ["save_review_note"]
 
     # Explicit "MCP" routing is opt-in: existing RAG/Agent queries are
     # untouched. This is deterministic, audited adapter selection.

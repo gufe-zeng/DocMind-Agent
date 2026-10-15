@@ -7,6 +7,7 @@ class AgentState(TypedDict, total=False):
     session_id: str
     user_id: str
     document_id: str | None
+    approval_id: str | None
     query: str
     messages: list[Any]
     format_hint: str | None
