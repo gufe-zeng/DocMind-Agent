@@ -87,7 +87,7 @@ scripts\smoke_test.bat
 ## M1a — Parse and chunk documents
 
 M1a has **passed local validation** (2026-10-14): TXT, PDF, DOCX, source metadata and long-text chunking.
-The next checkpoint, M1b, implements persistent uploads, CPU embeddings and Qdrant indexing.
+M1b was also accepted on 2026-10-15: source storage, ModelScope 512-d CPU embeddings, Qdrant payloads and idempotent reindex.
 
 ```cmd
 git pull
@@ -140,6 +140,38 @@ Implementation and troubleshooting: [M1 Guide](docs/M1_GUIDE.md) ·
 [M1b API Contract](docs/API.md).
 
 **M1 Completed (2026-10-15).** Local tests passed: ModelScope ONNX download, 512-dimensional CPU embedding, TXT/PDF/DOCX upload and Qdrant indexing, and idempotent reindexing.
+
+## M2a — Hybrid retrieval (implementation committed; awaiting local acceptance)
+
+Stage M2a:
+
+```text
+Chinese query
+├── Dense: CPU BGE query embedding → Qdrant cosine Top-K
+└── Sparse: Chinese character bigrams → BM25 Top-K
+       ↓
+Reciprocal Rank Fusion (RRF, k=60)
+       ↓
+Source-aware ranked chunks (no generation yet)
+```
+
+Run in Windows CMD after pulling the latest commit:
+
+```cmd
+git pull
+docker compose up -d --build api
+scripts\check_m2a.bat
+```
+
+The smoke test indexes three synthetic TXT documents and confirms Dense,
+BM25, RRF, exact document filtering and an empty result for an unknown
+document. Success ends with `M2a PASS`.
+
+M2a is intentionally **not yet RAG question answering**. Reranking,
+query rewriting, answer generation and citation validation come next.
+
+Implementation details: [docs/M2_GUIDE.md](docs/M2_GUIDE.md) ·
+M1 acceptance evidence: [docs/M1_ACCEPTANCE.md](docs/M1_ACCEPTANCE.md).
 
 ## Related Project
 
