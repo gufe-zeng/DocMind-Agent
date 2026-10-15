@@ -20,6 +20,7 @@ COPY scripts/check_m4b.py ./scripts/check_m4b.py
 COPY scripts/check_m4b_resume.py ./scripts/check_m4b_resume.py
 COPY scripts/check_m5a.py ./scripts/check_m5a.py
 COPY scripts/check_m5b.py ./scripts/check_m5b.py
+COPY scripts/check_m6a.py ./scripts/check_m6a.py
 COPY scripts/check_modelscope.py ./scripts/check_modelscope.py
 COPY migrations ./migrations
 COPY data/samples ./data/samples
