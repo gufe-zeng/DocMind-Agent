@@ -31,7 +31,10 @@ class ChatResponse(BaseModel):
     intent: str
     answer: str
     tools_called: list[str]
+    plan_source: str
+    planner_fallback_reason: str | None = None
     steps: int
+    entities: list[dict]
     sources: list[dict]
 
 
@@ -67,6 +70,9 @@ async def chat(request: ChatRequest) -> ChatResponse:
         intent=result.get("intent", "unknown"),
         answer=result.get("final_answer", ""),
         tools_called=result.get("tools_called", []),
+        plan_source=result.get("plan_source", "rules"),
+        planner_fallback_reason=result.get("planner_fallback_reason"),
+        entities=result.get("entities", []),
         steps=result.get("current_step", 0),
         sources=result.get("sources", []),
     )
