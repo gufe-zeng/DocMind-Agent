@@ -1,6 +1,6 @@
 # M6 — Reliability and Human-in-the-Loop
 
-Status: **M6a Completed (2026-10-15); M6b implemented, local acceptance pending.**
+Status: **M6a + M6b Completed (2026-10-15), with live Docker acceptance.**
 
 ## M6a — Bounded Read-Only Tool Runtime
 
@@ -64,7 +64,7 @@ The test **passed on 2026-10-15**. It uses real PostgreSQL/Qdrant/MCP for normal
 transient errors in its separate smoke-test Python process only.
 No debug fault-injection API or additional network port is introduced.
 
-## M6b — Protected Write and Human Approval (local acceptance pending)
+## M6b — Protected Write and Human Approval (accepted 2026-10-15)
 
 Frozen V1 write: `save_review_note(...)`. The Agent must create a durable
 pending approval and **not write the note** until the user approves.
@@ -138,5 +138,4 @@ local-only. A production system must add real identity verification,
 authorization, retention/deletion and observability before exposing
 protected writes.
 
-**Acceptance rule:** M6b must not be marked Completed until both Docker
-phases have passed after a real API restart.
+**Acceptance achieved on 2026-10-15:** both Docker phases passed, including a real API container restart. See [M6b Acceptance](M6B_ACCEPTANCE.md). This validates a controlled interruption/restart and does not establish production authorization or exactly-once handling for arbitrary external operations.

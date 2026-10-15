@@ -385,7 +385,7 @@ All document extractions are source-anchored. Long-document summaries are
 explicitly limited to retrieved evidence. Persistent memory, MCP and HITL
 remain later modules. See [M3 Guide](M3_GUIDE.md).
 
-## M4a Implementation (local acceptance pending)
+## M4a Implementation (accepted 2026-10-15)
 
 Session memory now resides in Redis under a UUID-scoped key with one-hour
 idle TTL and a six-turn bound. Short same-document follow-ups can reuse
@@ -409,7 +409,7 @@ MCP Client Adapter and verifies routing from a real Agent turn.
 
 No unauthenticated public MCP network port is opened. See [MCP Guide](MCP.md).
 
-## M6a — Reliability runtime (pending local acceptance)
+## M6a — Reliability runtime (accepted 2026-10-15)
 
 A read-only reliability wrapper around the typed Tool Registry applies
 per-tool deadlines and at most two retries for transient failures.
@@ -421,9 +421,9 @@ The previously accepted eight-step bound remains unchanged.
 
 Write actions are intentionally excluded from this executor.
 FR-10's protected `save_review_note` and Human Approval endpoint
-will be implemented and verified in M6b.
+were implemented and verified in M6b on 2026-10-15.
 
-## M6b — Durable Human Approval (pending local acceptance)
+## M6b — Durable Human Approval (accepted 2026-10-15)
 
 The narrow write action `save_review_note` uses the **official LangGraph
 `interrupt()` checkpoint** and the frozen `POST /v1/approvals/{approval_id}`

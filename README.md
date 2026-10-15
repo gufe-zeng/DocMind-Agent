@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M6 — Reliability + HITL**。M0–M5 均已通过本地功能验收。
+**M0–M6 已于 2026-10-15 完成本地功能验收。** 下一步优先开展完整业务场景演示，并推进 M7–M9 评测、可观测性与工程收尾。此验收不等于生产就绪。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -79,7 +79,7 @@ scripts\smoke_test.bat
 | M3 | LangGraph Agent + Tool Calling | Completed (2026-10-15) |
 | M4 | Session/Long-term Memory + Checkpoint | Completed (2026-10-15) |
 | M5 | MCP Server + Client | Completed (2026-10-15) |
-| M6 | Retry + Timeout + Fallback + HITL | In progress |
+| M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
 | M7 | RAG/Agent/System Eval | Planned |
 | M8 | Agent Metrics + Trace | Planned |
 | M9 | Engineering wrap-up + Demo + Resume | Planned |
@@ -443,7 +443,7 @@ implementation. See [M6 Reliability Guide](docs/RELIABILITY.md).
 
 ## M6b — Protected `save_review_note` / Human-in-the-Loop
 
-M6b code is implemented, **local Docker acceptance pending**.
+**M6b Completed (2026-10-15): actual two-phase Docker HITL acceptance passed, including API restart, checkpoint continuation, approval and rejection.**
 
 An explicit `保存审核备注：...` request creates a PostgreSQL approval
 record. LangGraph then pauses with `interrupt()` **before** the note is
@@ -465,7 +465,7 @@ The script will **restart only the API container once** between creating
 the pending note and approving it. No Qwen is required and no databases,
 volumes or model caches are removed.
 
-Expected: `M6b HITL PASS` and `M6b HITL validation passed.`.
+Observed: **`M6b HITL PASS`** and **`M6b HITL validation passed.`** See [M6b Acceptance](docs/M6B_ACCEPTANCE.md).
 See [M6 Reliability and HITL Guide](docs/RELIABILITY.md).
 
 **Security:** demo `user_id`/`session_id` UUIDs are not authentication.

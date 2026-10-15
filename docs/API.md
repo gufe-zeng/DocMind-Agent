@@ -181,9 +181,9 @@ Check: `scripts\check_m3a.bat`.
 
 **M3a accepted**: `scripts\check_m3a.bat`.
 **M3b accepted**: `scripts\check_m3b.bat` (2026-10-15).
-**Not yet implemented:** M4 conversation memory/checkpoints; M5 MCP; M6 HITL/retries.
+**Subsequent milestones:** M4–M6 were implemented and passed separate local acceptance tests on 2026-10-15; see their acceptance records.
 
-## M4a — Session history (implemented, local acceptance pending)
+## M4a — Session history (accepted 2026-10-15)
 
 ```http
 GET /v1/sessions/{session_id}
@@ -213,11 +213,10 @@ To follow up without passing document_id again:
 This is a local-development feature. Session IDs function as bearer tokens
 and there is no access control yet. Do not expose this API to the internet.
 
-M4b long-term preferences/semantic memory and workflow resume are not
-yet implemented.
+M4b opt-in preference memory and controlled graph interruption/resume passed separate local acceptance on 2026-10-15.
 
 
-## M6 — Human-in-the-loop approval (not implemented)
+## M6 — Human-in-the-loop approval (accepted 2026-10-15)
 
 ```http
 POST /v1/approvals/{approval_id}
@@ -293,7 +292,7 @@ No protected-write endpoint is added in M6a.
 
 ## M6b — Human Approval for a protected review-note write
 
-Implemented; **local Docker acceptance pending**. The V1 API uses its
+**Completed; real Docker acceptance passed on 2026-10-15.** The V1 API uses its
 existing `/v1/chat` endpoint and the frozen approval endpoint. There is
 no new arbitrary write-tool endpoint.
 
@@ -338,4 +337,4 @@ The note must be 1–500 characters and reference an indexed document.
 This demo is unauthenticated; do not treat UUID fields as real permission
 checks or deploy the API publicly.
 
-Local acceptance: `scripts\check_m6b.bat` (includes API restart).
+Local acceptance **passed**: `scripts\check_m6b.bat` (includes real API restart). See [M6b Acceptance](M6B_ACCEPTANCE.md).

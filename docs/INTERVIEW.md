@@ -41,7 +41,10 @@ Python function registry. M5a transport acceptance and M5b Agent integration bot
 - M6b code uses a real LangGraph interrupt and a PostgreSQL approval
   state machine. Approving resumes the checkpoint and triggers an
   idempotent database transaction; rejecting never inserts a note.
-- M6b requires a separate **local Docker acceptance**, including API
+- M6b **passed local Docker acceptance on 2026-10-15**, including API
   restart and both decision branches, before it can be called completed.
 - No real authentication, policy-driven RBAC, remote MCP access or
   exactly-once arbitrary external side-effect execution is claimed.
+
+
+The verified HITL chain is `POST /v1/chat` → PostgreSQL pending approval → LangGraph `interrupt()` → API restart → `POST /v1/approvals/{approval_id}` → resume/checkpoint → one approved `review_notes` insert. Reject and repeat/contradictory decisions were also exercised. The demo UUID scope checks are **not authentication**, and no production security or arbitrary external-write exactly-once guarantee is claimed.
