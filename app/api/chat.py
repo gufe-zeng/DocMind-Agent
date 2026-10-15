@@ -108,6 +108,19 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                 requested_doc if requested_doc is not None
                 else (previous.get("document_id") if previous else None)
             )
+            if is_memory_command(request.query):
+                if user_id is None:
+                    raise ValueError("Saving an explicit preference requires user_id.")
+                fields = parse_format_preference(request.query)
+                saved = await memory.save_format(user_id, fields)
+                return ChatResponse(
+                    request_id=request_id, session_id=session_id,
+                    status="memory_saved", intent="save_explicit_preference",
+                    answer="已记录合同分析输出格式：" + "、".join(fields),
+                    plan_source="rules", tools_called=[], steps=0,
+                    entities=[], sources=[], memory_saved=saved,
+                )
+
             resolved_query, used_context = resolve_followup(
                 request.query, previous, document_id=document_id
             )
