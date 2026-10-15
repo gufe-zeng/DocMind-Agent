@@ -9,7 +9,7 @@ Status: **M6a + M6b Completed (2026-10-15), with live Docker acceptance.**
 | Tool category | Timeout | Max retries |
 |---|---:|---:|
 | PostgreSQL metadata | 15 s | 2 |
-| Hybrid RAG and scoped Qwen summary | 90 s | 2 |
+| Hybrid RAG and scoped Qwen summary (CPU BGE ONNX) | 420 s default (300–600 configurable) | **0** |
 | Deterministic extraction | 45 s | 2 |
 | MCP metadata | 40 s | 2 |
 | MCP page / clause read | 60 s | 2 |
@@ -20,9 +20,17 @@ retry; HTTP 429/500/502/503/504 may also qualify. Unregistered tools,
 invalid arguments, data-provenance violations and software errors are
 not quietly converted into fallback success.
 
-An initial call plus at most two retries means **three total attempts**.
-On exhaustion, a tool returns `tool_unavailable`, an explicit inability
-to confirm the facts, and **no citation**. A multi-tool run can return
+For the ordinary I/O read-only tools, an initial call plus at most
+two retries means **three total attempts**. The CPU-heavy
+`search_documents` and `summarize_document` tools execute **once**
+with the separately bounded `RAG_CPU_TIMEOUT_SECONDS` budget, because
+`asyncio.wait_for` cannot terminate a running ONNX `to_thread` worker.
+The actual reranker inference is serialized by a process-local mutex,
+preventing concurrent CPU rerank calls in the same API process.
+
+On exhaustion (or the single CPU-RAG timeout), the tool returns
+`tool_unavailable`, an explicit inability to confirm the facts, and
+**no citation**. A multi-tool run can return
 `partial` while retaining the other tool's valid sourced answer.
 
 ### State and API
@@ -34,9 +42,25 @@ read-only tool: `tool`, `status`, `attempts`, `retries`, `timeout_seconds`,
 `duration_ms`, and a sanitized `error_type` for exhausted retries.
 The existing `/v1/chat` response exposes this as `tool_events`.
 
-**Limitation:** coroutine deadlines do not forcibly kill CPU inference
-threads already spawned via `asyncio.to_thread`. This is bounded
-best-effort local execution, not exactly-once distributed processing.
+**Observed M9 LIVE defect (2026-10-15):** a single RAG request
+returned `tool_unavailable` with `TimeoutError`, three attempts at
+90 seconds, total 270.30 seconds, and **zero** actual LLM calls. M7c
+had already measured standalone BGE ONNX reranking at 171.97–259.30
+seconds; thus the old policy timed out before Qwen could run.
+
+**Repair:** RAG generation and summarization now have a local CPU
+budget of 420 seconds by default, with no automatic retry. The budget
+also covers retrieval and a subsequent Qwen HTTP request and is
+validated in the range **300–600 seconds**. To change it without
+modifying code, set `RAG_CPU_TIMEOUT_SECONDS` in the Compose
+environment and **recreate only the API container**; rebuilding the
+image is not necessary for later timeout tuning.
+
+**Limitation:** a coroutine deadline still does not forcibly kill an
+already-running ONNX worker thread. The single-attempt policy and
+per-process reranker mutex prevent immediate duplicate inference, but
+this is bounded best-effort local execution, not killable distributed
+jobs or a general-purpose CPU resource scheduler.
 
 ### Local acceptance — Windows CMD
 

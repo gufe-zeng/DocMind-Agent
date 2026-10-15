@@ -1,40 +1,85 @@
 # M9 Business Demo and Engineering Acceptance
 
-**Status: implementation submitted; local BASE/LIVE not yet verified.**
+**Status: BASE locally accepted; LIVE previously failed on CPU-RAG timeout.
+M9 is not complete until LIVE passes after the patch.**
 
-## Functional acceptance
+## BASE — accepted 2026-10-15 (actual Windows Docker result)
 
-**BASE:** Run `scripts\check_m9.bat` against the Docker stack.
-
-Expected coverage: healthy dependencies; real TXT/PDF/DOCX indexing;
-two-tool Agent→MCP; source-cited extraction and page-2 PDF evidence;
-Redis multi-turn context; cross-session explicit preference; HITL
-pending/approved/idempotent/409 conflict; durable PostgreSQL traces;
-Prometheus metrics. Terminal lines:
+The user ran `scripts\check_m9.bat` and confirmed:
 
 ```text
+PASS DocMind API /health and dependencies ready
+PASS TXT/PDF/DOCX uploaded and indexed with real services
+PASS LangGraph -> MCP two-tool chain with scoped citations
+PASS source-grounded party/payment extraction with citations
+PASS actual PDF page-2 source provenance
+PASS parsed DOCX clause retrieval and citation
+PASS Redis session follow-up and PostgreSQL checkpoint
+PASS explicit preference persisted and recalled in new session
+PASS HITL guarded write, approved once, replay idempotent, conflict denied
+PASS Prometheus /metrics and persisted request-level Agent traces
 M9 DEMO BASE PASS
 M9 base demo validation passed.
 ```
 
-**LIVE:** With Qwen/vLLM available, run `scripts\check_m9_live.bat`
-using BASE's indexed synthetic contract. It checks a real hybrid RAG
-response, valid sources, correct payment deadline, and a persisted model
-call. Terminal lines:
+The demo recorded seven completed synthetic workflow cases with distinct
+PostgreSQL trace identifiers. No generalization or production assertions
+follow from these seven cases.
+
+## LIVE — failed 2026-10-15, cause confirmed by M8 PostgreSQL trace
+
+```text
+status=tool_unavailable
+request_ms=272128
+llm_calls=0
+error_type=TimeoutError
+attempts=3
+timeout_s=90
+tool_ms=270300.42
+```
+
+The BGE CPU ONNX reranker was measured at 171.97–259.30 seconds in M7c.
+Under the old 90-second read-only RAG timeout, the tool exhausted three
+attempts and **never called Qwen**.
+
+**Patch under verification:** `search_documents` and
+`summarize_document` use a default 420-second CPU-RAG deadline, with
+zero retries. Reranker ONNX scoring is serialized by an in-process lock.
+`RAG_CPU_TIMEOUT_SECONDS` is configurable (300–600) through the
+Compose environment, and failed LIVE calls expose sanitized tool events.
+
+This repair is supported by unit/CI tests, but **does not constitute
+a successful LIVE result until the user reruns the Docker test**.
+
+## One-rebuild verification after CI success
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m9_live.bat
+```
+
+Do **not** repeat BASE; its demo documents persist in the named volume.
+Expected completion:
 
 ```text
 M9 DEMO LIVE PASS
 M9 live demo validation passed.
 ```
 
-**CI:** Python unit checks validate static fixture creation, citation
-scope checks and the no-rebuild BAT script contract. They cannot replace
-the user's live Docker results.
+A no-rebuild runtime tuning option (only if 420 seconds is insufficient):
 
-## Release boundaries
+```cmd
+set RAG_CPU_TIMEOUT_SECONDS=540
+docker compose up -d --no-deps --force-recreate api
+scripts\check_m9_live.bat
+```
 
-M0–M8 core local acceptance was already reported by the user.
-Grafana visualization has not been independently validated; the full
-frozen V1 checklist therefore remains open until that separate check.
-The M9 CLI demo is not a production UI or a real-world legal quality
-benchmark. Do not mark M9 Completed until BASE and LIVE have passed.
+This will recreate **only** the API container using its existing image,
+not rebuild or delete PostgreSQL/Qdrant/Redis volumes. No need to run this
+tuning step unless diagnostics show a single timeout at 420 seconds.
+
+The separate Grafana local dashboard verification remains pending for
+full frozen V1 checklist sign-off. The M9 CLI demo does not establish
+production authentication or real-world legal correctness.

@@ -84,3 +84,48 @@ def test_empty_reranking_skips_model_load(tmp_path: Path) -> None:
         "付款期限", [], model_name=reranker.RERANKER_MODEL,
         cache_dir=str(tmp_path), limit=2
     ) == []
+
+
+def test_parallel_cpu_rerank_requests_do_not_execute_model_simultaneously(monkeypatch):
+    """The inference lock remains held by the real worker, even if caller cancels."""
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Lock
+    from time import sleep
+
+    gate = Lock()
+    activity = {"active": 0, "max_active": 0, "calls": 0}
+
+    class SlowFakeModel:
+        def rerank(self, query, snippets, batch_size):
+            with gate:
+                activity["active"] += 1
+                activity["calls"] += 1
+                activity["max_active"] = max(
+                    activity["max_active"], activity["active"]
+                )
+            try:
+                sleep(0.02)
+                return iter([0.9] * len(snippets))
+            finally:
+                with gate:
+                    activity["active"] -= 1
+
+    fake = SlowFakeModel()
+    monkeypatch.setattr(reranker, "_load_reranker", lambda *args: fake)
+
+    def one_call(_):
+        return reranker.rerank_hits(
+            "付款期限",
+            [fake_hit("p", "付款期限三十日")],
+            model_name=reranker.RERANKER_MODEL,
+            cache_dir="/synthetic-cache-no-files",
+            limit=1,
+        )
+
+    with ThreadPoolExecutor(max_workers=4) as workers:
+        rows = list(workers.map(one_call, range(4)))
+
+    assert len(rows) == 4
+    assert activity["calls"] == 4
+    assert activity["max_active"] == 1
+    assert all(r[0].hit.chunk_id == "p" for r in rows)

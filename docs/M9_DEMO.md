@@ -1,6 +1,6 @@
 # M9 — V1 业务演示与工程收尾
 
-**状态：代码已准备，等待本机 BASE/LIVE 验收。**
+**状态：BASE 已通过本机验收；LIVE 曾因 CPU BGE 超时失败，修复已准备，待本机复验。**
 
 本阶段只集成冻结 V1 的已有能力，不增加新的公网 API、新模型和未经验证的功能。
 
@@ -17,7 +17,7 @@ scripts\check_m9.bat
 
 本次 API 构建一次后，`check_m9.bat` 不再触发构建。M8 已将第三方依赖安装移到源码 COPY 之前；源码发生普通改动时通常可复用 BuildKit 依赖缓存。
 
-### BASE：无需 Qwen
+### BASE：无需 Qwen（2026-10-15 已验收通过）
 
 自动执行真实 Docker API 流程：
 
@@ -41,7 +41,7 @@ M9 base demo validation passed.
 `/app/data/uploads/.m9_demo_state.json` 和
 `/app/data/uploads/.m9_demo_report.json`，用于保存合成文档 UUID、各阶段状态与 Trace UUID。报告不包含合同内容或模型回答；不会上传到 GitHub。
 
-### LIVE：真实 Qwen，只增加一次问答
+### LIVE：真实 Qwen，只增加一次问答（超时修复待验收）
 
 运行 BASE 后，保证独立 `llm-serving-ops` 的 Qwen/vLLM 服务在 Windows 主机 8000 端口可访问，然后执行：
 
@@ -61,6 +61,18 @@ M9 live demo validation passed.
 ```
 
 此前 CPU BGE Rerank 的独立测量约为 172–259 秒；这与 Docker 构建耗时不同。LIVE 可能较慢，无需反复运行。
+
+**已诊断的 M9 LIVE 问题：** 原 `search_documents` 在 90 秒后超时，最多重复三次，总计耗时约 270 秒，`llm_calls=0`。新策略对包含 CPU Rerank 的 `search_documents` 和 `summarize_document` 采用 420 秒（可配置 300–600 秒）的整工具预算，超时不重试，避免已经启动的 CPU 工作线程被重复触发；ONNX 重排串行执行。
+
+如果之前已跑通 BASE，**不必再次上传三种格式或运行 BASE**。修复代码通过 CI 后只需：
+
+```cmd
+git pull
+docker compose up -d --build api
+scripts\check_m9_live.bat
+```
+
+重新构建这一次是为了更新运行时策略。后续如果 420 秒仍不够，可以先阅读实际 `tool_events.error_type`，再用 `set RAG_CPU_TIMEOUT_SECONDS=540` 与 `docker compose up -d --no-deps --force-recreate api` 调整运行配置，无需重新构建镜像。
 
 ## 分项评测，不需要重建镜像
 

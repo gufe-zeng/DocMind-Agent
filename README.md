@@ -82,7 +82,7 @@ scripts\smoke_test.bat
 | M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
 | M7 | RAG/Agent/System Eval | Completed: M7a/M7b/M7c synthetic local gates (2026-10-15) |
 | M8 | Agent Metrics + Trace | Completed: real PostgreSQL Trace, MCP/HITL and Prometheus acceptance (2026-10-15) |
-| M9 | Engineering wrap-up + Demo + Resume | Implemented; BASE/LIVE Docker acceptance pending |
+| M9 | Engineering wrap-up + Demo + Resume | BASE Completed; LIVE CPU-RAG timeout fix pending local acceptance |
 
 ## M1a — Parse and chunk documents
 
@@ -577,8 +577,9 @@ scripts\check_m9_live.bat
 
 Expected: `M9 DEMO LIVE PASS`. The LIVE script reuses BASE's indexed
 fixture for one Qwen-grounded RAG answer; CPU rerank may take minutes.
-Neither validator rebuilds the Docker image. M9 remains pending actual
-local results.
+Neither validator rebuilds the Docker image. M9 BASE passed on 2026-10-15; LIVE failed with three 90-second
+RAG timeouts (270.30s) before Qwen. The RAG CPU budget/retry fix is
+pending local LIVE acceptance; M9 is not yet fully Completed.
 
 - [M9 Demo guide](docs/M9_DEMO.md)
 - [M9 acceptance](docs/M9_ACCEPTANCE.md)
@@ -587,3 +588,25 @@ local results.
 
 The full frozen V1 sign-off additionally requires a local Grafana
 dashboard check; the M8 core metrics already passed.
+
+## M9 LIVE timeout diagnosis and fix (2026-10-15)
+
+The confirmed trace reported `tool_unavailable`, `TimeoutError`,
+`attempts=3`, `timeout_s=90`, and `llm_calls=0`.
+The CPU BGE reranker was independently measured at 172–259s, which
+exceeded the original per-attempt budget. RAG and evidence summary
+now use a configurable 420-second local CPU deadline **without automatic
+CPU-task retries**; serial ONNX scoring avoids overlapping calls.
+Other read-only tools retain their established <=2 transient retries.
+
+After GitHub CI succeeds, update the API image once and run only LIVE:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m9_live.bat
+```
+
+The already-accepted BASE does not need another run. See
+[M9 acceptance and timeout evidence](docs/M9_ACCEPTANCE.md).

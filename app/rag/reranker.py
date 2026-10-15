@@ -24,6 +24,9 @@ ONNX_FILE = Path("onnx/model.onnx")
 TOKENIZER_FILES = ("tokenizer.json", "tokenizer_config.json")
 MIN_ONNX_BYTES = 100_000_000
 _DOWNLOAD_LOCK = Lock()
+# ONNX CPU inference is not cancellable through asyncio.wait_for. Prevent
+# concurrent requests from multiplying expensive model sessions/inference.
+_INFERENCE_LOCK = Lock()
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,8 +119,12 @@ def rerank_hits(
     # Keep individual inputs small on CPU. Truncation is explicit here;
     # retrieved source/citation metadata is preserved in each original hit.
     snippets = [hit.text[:400] for hit in hits]
-    model = _load_reranker(model_name, cache_dir)
-    scores = [float(value) for value in model.rerank(query, snippets, batch_size=4)]
+    # The lock is acquired in the actual worker thread. If its awaiting
+    # coroutine times out, the background ONNX call retains the lock until
+    # it genuinely finishes; a later request cannot start a second CPU job.
+    with _INFERENCE_LOCK:
+        model = _load_reranker(model_name, cache_dir)
+        scores = [float(value) for value in model.rerank(query, snippets, batch_size=4)]
     if len(scores) != len(hits) or not all(math.isfinite(s) for s in scores):
         raise RuntimeError("Invalid BGE cross-encoder scores.")
     ranked = [RerankedHit(hit=hit, reranker_score=score) for hit, score in zip(hits, scores, strict=True)]

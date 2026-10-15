@@ -105,6 +105,25 @@ def summarize_result(name: str, reply: dict) -> dict:
     }
 
 
+def live_failure_diagnostic(reply: dict, llm_calls: int | None) -> dict:
+    """Return only bounded tool control-plane data, never Qwen/contract text."""
+    fields = (
+        "tool", "status", "attempts", "retries", "timeout_seconds",
+        "duration_ms", "error_type",
+    )
+    return {
+        "status": reply.get("status"),
+        "trace_id": reply.get("trace_id"),
+        "tools_called": reply.get("tools_called", []),
+        "tool_events": [
+            {field: event[field] for field in fields if field in event}
+            for event in reply.get("tool_events", [])
+            if isinstance(event, dict)
+        ],
+        "llm_calls": llm_calls,
+    }
+
+
 async def wait_healthy(http: httpx.AsyncClient) -> None:
     loop = asyncio.get_running_loop()
     until = loop.time() + 90
@@ -384,16 +403,38 @@ async def run_live() -> None:
     state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
     validate_demo_state(state)
     document_id = state["documents"]["txt"]
+    from app.core.config import get_settings
+    configured_timeout = get_settings().rag_cpu_timeout_seconds
     async with httpx.AsyncClient(
-        base_url=BASE_URL, timeout=600, trust_env=False
+        base_url=BASE_URL, timeout=max(600.0, configured_timeout + 60),
+        trust_env=False,
     ) as http:
         await wait_healthy(http)
         answer = await post_json(http, "/v1/chat", {
             "query": "这份合同的付款期限是多少？",
             "document_id": document_id,
         })
-        assert answer["status"] == "answered", answer["status"]
+        if answer.get("status") != "answered":
+            # When CPU ONNX/Qwen fails, surface persisted, sanitized evidence
+            # immediately rather than a bare AssertionError after minutes.
+            attempts = await database_scalar(
+                "SELECT llm_calls FROM agent_traces WHERE trace_id=$1",
+                UUID(answer["trace_id"]),
+            )
+            details = live_failure_diagnostic(answer, attempts)
+            print("M9 LIVE FAILURE DIAGNOSTICS: "
+                  + json.dumps(details, ensure_ascii=False, indent=2),
+                  flush=True)
+            raise AssertionError(
+                f"M9 LIVE RAG failed with status={answer.get('status')}; "
+                "see tool_events/error_type and llm_calls above."
+            )
         assert answer["tools_called"] == ["search_documents"]
+        events = answer.get("tool_events", [])
+        assert len(events) == 1
+        assert events[0].get("status") == "ok"
+        assert events[0].get("attempts") == 1
+        assert events[0].get("timeout_seconds") == configured_timeout
         assert ("三十" in answer["answer"] or "30" in answer["answer"])
         assert_citations(answer, document_id)
         await assert_trace(answer, expect_llm=True)

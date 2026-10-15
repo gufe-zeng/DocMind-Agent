@@ -45,3 +45,12 @@ Remaining deployment gaps: caller-supplied user/session UUIDs are not
 authentication; no full RBAC, production observability retention,
 semantic entailment benchmark, concurrency/load testing, or hardened
 public deployment.
+
+## M9 LIVE diagnostic and remediation
+
+Confirmed from PostgreSQL `agent_traces`: `TimeoutError` after three
+90-second RAG attempts, 270.30 seconds combined, and zero Qwen calls.
+Local BGE CPU rerank was previously measured at 172–259 seconds.
+New bounded CPU-RAG policy is 420 seconds (configurable to 600), with
+no retry of a still-running ONNX worker and serial rerank inference.
+Mark LIVE accepted only after the user reruns the repaired Docker image.

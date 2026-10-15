@@ -12,7 +12,7 @@ This is a bounded local-demo executor, not exactly-once distributed execution.
 
 import asyncio
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from time import perf_counter
 from typing import Any
 
@@ -26,21 +26,31 @@ class ToolPolicy:
     timeout_seconds: float
     max_retries: int = 2
     backoff_seconds: float = 0.1
+    cpu_inference: bool = False
 
     def __post_init__(self) -> None:
-        if not (0 < self.timeout_seconds <= 180):
-            raise ValueError("Tool timeout must be within (0, 180] seconds.")
+        # CPU ONNX inference may continue running inside asyncio.to_thread
+        # after wait_for cancels its coroutine. Give it a longer, explicit
+        # budget, but never retry the non-cancellable computation.
+        limit = 600 if self.cpu_inference else 180
+        if not (0 < self.timeout_seconds <= limit):
+            raise ValueError(f"Tool timeout must be within (0, {limit}] seconds.")
+        if self.cpu_inference and self.max_retries != 0:
+            raise ValueError("CPU inference policies must not restart a cancelled worker.")
         if not (0 <= self.max_retries <= 2):
             raise ValueError("Maximum retry count is capped at two.")
         if not (0 <= self.backoff_seconds <= 5):
             raise ValueError("Invalid retry backoff.")
 
 
+CPU_RAG_TOOLS = frozenset({"search_documents", "summarize_document"})
+
+
 READ_ONLY_POLICIES: dict[str, ToolPolicy] = {
     "query_document_metadata": ToolPolicy(timeout_seconds=15),
-    "search_documents": ToolPolicy(timeout_seconds=90),
+    "search_documents": ToolPolicy(timeout_seconds=420, max_retries=0, cpu_inference=True),
     "extract_entities": ToolPolicy(timeout_seconds=45),
-    "summarize_document": ToolPolicy(timeout_seconds=90),
+    "summarize_document": ToolPolicy(timeout_seconds=420, max_retries=0, cpu_inference=True),
     "mcp_get_document": ToolPolicy(timeout_seconds=40),
     "mcp_get_document_page": ToolPolicy(timeout_seconds=60),
     "mcp_find_clause": ToolPolicy(timeout_seconds=60),
@@ -89,6 +99,16 @@ async def execute_read_only_tool(
     if name not in READ_ONLY_POLICIES:
         raise ValueError(f"No read-only reliability policy for tool: {name}")
     active = policy or READ_ONLY_POLICIES[name]
+    if name in CPU_RAG_TOOLS:
+        if active.max_retries != 0:
+            raise ValueError("RAG tools must not restart non-cancellable CPU inference.")
+        if policy is None:
+            # Runtime-configurable without reinstalling/rebuilding the API:
+            # recreate only the API container after updating Compose env.
+            from app.core.config import get_settings
+            active = replace(
+                active, timeout_seconds=get_settings().rag_cpu_timeout_seconds,
+            )
     started = perf_counter()
 
     for attempt in range(active.max_retries + 1):
