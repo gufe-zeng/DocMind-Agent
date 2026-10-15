@@ -149,10 +149,43 @@ Expect JSON with `"status":"indexed"`, `"chunk_count"` and
 
 ### The first embedding model download
 
-FastEmbed downloads the Chinese BGE ONNX model on the first indexing request.
-It can take longer than ordinary API calls and requires external model-host
-connectivity. A named Docker volume (`embedding-cache`) stores downloaded
-model files for later use.
+The BGE model is obtained **from ModelScope rather than Hugging Face**:
+
+- ModelScope ONNX source: `lyf219/bge-small-zh-v1.5-onnx`
+- Web page: https://modelscope.cn/models/lyf219/bge-small-zh-v1.5-onnx
+- Original model identity: `BAAI/bge-small-zh-v1.5`
+- ModelScope source is a *community conversion*, not a distribution from
+  BAAI or Qdrant; use a reviewed, pinned revision for production deployment.
+- The snapshot contains an ONNX weight file and tokenizer files. The weight
+  filename is adapted locally to `model_optimized.onnx`, which is expected
+  by FastEmbed's built-in BGE descriptor.
+- `TextEmbedding(specific_model_path=..., local_files_only=True)` loads the
+  converted ONNX file from the local volume. No Hugging Face API call occurs.
+- Inference remains CPU-only with 512-dimensional vectors.
+
+A named Docker volume (`embedding-cache`) retains files between restarts.
+
+**First-run validation (Windows CMD)**:
+
+```cmd
+git pull
+docker compose up -d --build api
+scripts\check_modelscope.bat
+scripts\check_m1b.bat
+```
+
+The first check confirms ONNX download, tokenizer loading and two real
+Chinese embeddings before exercising the database/indexing pipeline.
+
+If `.env` still contains `DOCMIND_PROXY_URL` from the earlier Clash
+workaround, remove or comment it out to prefer direct ModelScope access.
+The ModelScope domain and its Aliyun CDN are listed under `NO_PROXY` by
+default. Do **not** set `HF_ENDPOINT`; it is unused for embedding downloads.
+
+Downloaded weights are community-converted ONNX artifacts; validate actual
+retrieval quality before treating their output as equivalent to official
+BAAI weights. The verification script prints the locally downloaded file
+size and SHA-256 hash for later reproducibility checks.
 
 If the index endpoint returns HTTP 503, inspect:
 

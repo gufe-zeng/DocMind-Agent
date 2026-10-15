@@ -4,6 +4,7 @@ This test intentionally does not call the Hugging Face API.
 It is safe to run more than once: model files persist in the Docker volume.
 """
 
+import hashlib
 import math
 from pathlib import Path
 
@@ -37,6 +38,11 @@ def main() -> None:
     assert onnx.is_file()
     print(f"Cached local ONNX: {onnx}", flush=True)
     print(f"Model size: {onnx.stat().st_size:,} bytes", flush=True)
+    digest = hashlib.sha256()
+    with onnx.open("rb") as stream:
+        for data in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(data)
+    print(f"ONNX SHA256: {digest.hexdigest()}", flush=True)
     print(f"Embedding dimension: {len(vectors[0])}", flush=True)
     print("ModelScope ONNX PASS", flush=True)
 

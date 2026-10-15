@@ -101,7 +101,15 @@ Details: [M1 Guide](docs/M1_GUIDE.md) · [M0 Acceptance](docs/M0_ACCEPTANCE.md)
 
 ## M1b — Upload, embed and index in Qdrant
 
-First run (the BGE Chinese model may need a ~90 MB download):
+The CPU BGE model is downloaded from **ModelScope**, using a compatible
+ community-maintained ONNX conversion. FastEmbed then runs strictly from its
+ local cache; the first indexing run does not call Hugging Face:
+
+- ModelScope repository: https://modelscope.cn/models/lyf219/bge-small-zh-v1.5-onnx
+- Original model: `BAAI/bge-small-zh-v1.5`; vector dimension: 512
+- Runtime: ONNX CPU (no PyTorch GPU dependency)
+
+First run:
 
 ```cmd
 git pull
