@@ -108,10 +108,11 @@ async def answer_document_question(
     )
 
     # An explicit insufficient-evidence answer is allowed without citations.
-    insufficiency_phrase = "证据不足"
-    is_refusal = insufficiency_phrase in completion.text and not any(
-        keyword in completion.text for keyword in ("因此可见", "根据第")
-    )
+    normalized_answer = completion.text.strip().rstrip("。.! ")
+    is_refusal = normalized_answer in {
+        "证据不足，无法确定",
+        "提供的文档证据不足，无法确定",
+    }
     check = validate_answer_citations(
         completion.text, sources, require_at_least_one=not is_refusal
     )
