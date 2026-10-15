@@ -97,6 +97,11 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
     try:
         async with store.lock(sid):
             previous = await store.read(sid)
+            previous_user = previous.get("user_id") if previous else None
+            supplied_user = str(request.user_id) if request.user_id else None
+            if previous_user and supplied_user and previous_user != supplied_user:
+                raise HTTPException(status_code=409, detail="Session identity mismatch.")
+            user_id = UUID(supplied_user or previous_user) if (supplied_user or previous_user) else None
             requested_doc = str(request.document_id) if request.document_id else None
             document_id = (
                 requested_doc if requested_doc is not None
