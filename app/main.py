@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 
 from app.agent.graph import build_agent_graph
 from app.api.chat import router as chat_router
+from app.api.approvals import router as approval_router
 from app.api.documents import router as documents_router
 from app.api.health import router as health_router
 from app.core.config import get_settings
@@ -24,6 +25,8 @@ async def lifespan(app: FastAPI):
     await init_documents_schema(settings.postgres_dsn)
     from app.memory.long_term import init_memory_schema
     await init_memory_schema(settings.postgres_dsn)
+    from app.approvals.storage import init_approval_schema
+    await init_approval_schema(settings.postgres_dsn)
     redis_client = Redis.from_url(
         settings.redis_url,
         decode_responses=True,
@@ -57,6 +60,7 @@ app = FastAPI(
 app.include_router(health_router)
 app.include_router(documents_router)
 app.include_router(chat_router)
+app.include_router(approval_router)
 
 
 @app.get("/", tags=["system"])
@@ -64,7 +68,7 @@ async def root() -> dict[str, str]:
     return {
         "service": settings.app_name,
         "version": "0.1.0",
-        "stage": "M5",
+        "stage": "M6",
         "status": "running",
     }
 
