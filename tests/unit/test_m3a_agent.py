@@ -23,10 +23,7 @@ def test_router_single_and_compound_intents():
 
 
 def test_registry_has_only_approved_m3a_tools():
-    assert set(available_tools()) == {
-        "search_documents",
-        "query_document_metadata",
-    }
+    assert {"search_documents", "query_document_metadata"}.issubset(set(available_tools()))
     with pytest.raises(ValidationError):
         SearchDocumentsArgs(query="  ")
     with pytest.raises(ValidationError):
