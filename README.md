@@ -141,7 +141,7 @@ Implementation and troubleshooting: [M1 Guide](docs/M1_GUIDE.md) ·
 
 **M1 Completed (2026-10-15).** Local tests passed: ModelScope ONNX download, 512-dimensional CPU embedding, TXT/PDF/DOCX upload and Qdrant indexing, and idempotent reindexing.
 
-## M2a — Hybrid retrieval (implementation committed; awaiting local acceptance)
+## M2a — Hybrid retrieval (accepted on 2026-10-15)
 
 Stage M2a:
 
@@ -163,15 +163,52 @@ docker compose up -d --build api
 scripts\check_m2a.bat
 ```
 
-The smoke test indexes three synthetic TXT documents and confirms Dense,
-BM25, RRF, exact document filtering and an empty result for an unknown
-document. Success ends with `M2a PASS`.
+The 2026-10-15 local test indexed three synthetic TXT documents and confirmed Dense,
+BM25, RRF, exact document filtering and no-result behavior. Output: `M2a PASS`.
 
-M2a is intentionally **not yet RAG question answering**. Reranking,
-query rewriting, answer generation and citation validation come next.
+M2a produces ranked evidence; it does not generate answers. M2b adds actual
+Cross-Encoder reranking, evidence IDs and OpenAI-compatible LLM generation.
 
 Implementation details: [docs/M2_GUIDE.md](docs/M2_GUIDE.md) ·
 M1 acceptance evidence: [docs/M1_ACCEPTANCE.md](docs/M1_ACCEPTANCE.md).
+
+## M2b — Reranker + grounded generation (code committed, awaiting acceptance)
+
+1. **ModelScope BGE Reranker**: BAAI/bge-reranker-base (ONNX, CPU).
+   The initial ~1.11 GB download is considerably larger than the M1 embedding
+   weights, and remains cached in the existing `embedding-cache` volume.
+2. **Deterministic source citations**: Python assigns [S1], [S2] and checks
+   the generated response only references real IDs. This checks provenance
+   links, **not semantic entailment of individual claims**.
+3. **LLM generation**: One OpenAI-compatible chat completion through your
+   `llm-serving-ops` endpoint; max two evidence chunks and 128 output tokens
+   by default for the local Qwen3-0.6B/1024-token context.
+
+Run in Windows CMD:
+
+```cmd
+git pull
+docker compose up -d --build api
+scripts\check_reranker.bat
+scripts\check_m2b.bat
+```
+
+The `check_m2b.bat` command uses real document ingestion/retrieval/reranking
+and a deterministic **mock LLM** to test the citation contract. This does
+*not* mean the live vLLM pipeline has been accepted.
+
+Once `llm-serving-ops` serves a model on host port 8000, run:
+
+```cmd
+scripts\check_m2b_live.bat
+```
+
+A real answer must contain a valid `[S1]` citation; otherwise the pipeline
+fails closed with `citation_unverified`. M2 remains In Progress until the
+real endpoint works.
+
+See [M2 Guide](docs/M2_GUIDE.md) and
+[M2a Acceptance](docs/M2A_ACCEPTANCE.md) for detailed checks.
 
 ## Related Project
 

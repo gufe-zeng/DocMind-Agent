@@ -85,6 +85,32 @@ Qdrant: collection `documents_v1`, each point payload contains
 
 M1b smoke test: `scripts\check_m1b.bat`.
 
+## M2 — Internal RAG query API (not a new HTTP endpoint)
+
+M2 exposes the Python function:
+
+```python
+from app.rag.pipeline import answer_document_question, answer_to_dict
+
+result = await answer_document_question(
+    "服务验收后付款期限是多少天？",
+    document_id="indexed-document-uuid",
+)
+response = answer_to_dict(result)
+```
+
+Return structure:
+
+- `query`, `answer`, `status` (`answered`, `no_evidence`,
+  `citation_unverified`, `insufficient_evidence`)
+- `citation_valid`, `citations_used`
+- `sources`: evidence ID, document ID, chunk ID, filename, page,
+  section, evidence text and reranker score
+- `retrieved_candidates`, `prompt_tokens`, `completion_tokens`
+
+This will be consumed by the LangGraph runtime via the already frozen
+`POST /v1/chat` endpoint in M3. It is not directly public in M2.
+
 ## M3 — Agent chat (not implemented)
 
 ```http
