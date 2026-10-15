@@ -128,8 +128,8 @@ Request:
 }
 ```
 
-`query` is required (1–2000 chars); `document_id` and `session_id` are
-optional UUIDs. From M4a, `session_id` is a real Redis short-term session
+`query` is required (1–2000 chars); `document_id`, `session_id` and
+M4b's local-demo `user_id` are optional UUIDs. From M4a, `session_id` is a real Redis short-term session
 identifier, and LangGraph checkpoints share that thread ID. An omitted
 session ID starts a new session. A short follow-up with the same ID reuses
 its document context and may apply conservative query expansion.
@@ -150,6 +150,9 @@ Response:
   "entities": [],
   "context_applied": false,
   "effective_document_id": "uuid-of-an-indexed-document",
+  "memory_saved": null,
+  "retrieved_memories": [],
+  "memory_applied": false,
   "sources": [
     {
       "id": "S1",
@@ -222,3 +225,25 @@ POST /v1/approvals/{approval_id}
 
 No additional public APIs are added without a corresponding frozen V1
 requirement.
+
+## M4b — Opt-in format preference (implementation, local test pending)
+
+No new endpoint. Save a whitelisted preference through `POST /v1/chat`:
+
+```json
+{
+  "query": "请记住：以后合同分析按主体、金额、期限、风险、引用格式输出。",
+  "user_id": "a-stable-demo-user-uuid"
+}
+```
+
+The response uses `status=memory_saved` and includes a structured
+`memory_saved` record. A new session can supply the same `user_id`,
+an indexed document ID, and a document-analysis question. Recalled Qdrant
+preferences are reported in `retrieved_memories`; `memory_applied=true`
+means a whitelisted formatting hint was passed into a RAG tool. It does
+not prove every heading was followed.
+
+A caller-provided user UUID is not real authentication. Run locally only.
+Other preference classes and arbitrary long-term personal facts are not
+supported by this demo implementation.
