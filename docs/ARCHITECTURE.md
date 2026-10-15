@@ -352,3 +352,25 @@ DocMind-Agent/
 ```
 
 Directory ownership remains stable through V1. New top-level modules are not added speculatively.
+
+
+## M3a implementation (in progress)
+
+The M3a implementation introduces a compiled LangGraph `StateGraph`:
+
+```text
+START → route → decide ──→ call_tool ──→ decide
+                    │                       │
+                    └──→ synthesize ←──────┘
+                              ↓
+                             END
+```
+
+The routing policy is **deterministic**, not LLM-driven. Tool outputs are
+typed, stored in graph state and returned to `/v1/chat`.
+
+Tools implemented in this checkpoint: `search_documents` (M2 RAG)
+and `query_document_metadata` (PostgreSQL). No checkpoint/memory in
+M3a, and no HITL approval flow or write tools until M6.
+
+See [M3 Guide](M3_GUIDE.md).

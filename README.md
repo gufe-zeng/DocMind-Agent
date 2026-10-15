@@ -211,6 +211,40 @@ quantitative retrieval/faithfulness evaluation remain future tasks.
 See [M2 Guide](docs/M2_GUIDE.md), [M2b Acceptance](docs/M2B_ACCEPTANCE.md)
 and [M2a Acceptance](docs/M2A_ACCEPTANCE.md) for detailed checks.
 
+## M3a — LangGraph Agent routing and Tool Calling
+
+M3a implements a real `StateGraph` with conditional edges and a typed tool
+registry. It reuses the accepted M2 RAG path and the PostgreSQL document
+metadata table. Routing is intentionally **rule based** for the first
+checkpoint; **LLM-driven planning is not claimed until M3b**.
+
+```text
+POST /v1/chat
+     ↓
+LangGraph: route → decide → call_tool → decide → synthesize
+                             ↑          │
+                             └──────────┘ (next bounded tool)
+                    ↓
+       search_documents / query_document_metadata
+                    ↓
+              answer + source IDs
+```
+
+To validate in Windows CMD, keep `llm-serving-ops` running on port 8000:
+
+```cmd
+git pull
+docker compose up -d --build api
+scripts\check_m3a.bat
+```
+
+The smoke test indexes a synthetic contract, calls the PostgreSQL metadata
+tool and calls the full M2 RAG tool via the new `POST /v1/chat` interface.
+Expected final output: `M3a PASS`.
+
+**M3a is not yet accepted**; it has no session memory/checkpointer or
+LLM-selected multi-tool plan. See [M3 Guide](docs/M3_GUIDE.md).
+
 ## Related Project
 
 Inference serving and observability base:

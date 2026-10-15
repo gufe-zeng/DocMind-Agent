@@ -111,11 +111,66 @@ Return structure:
 This will be consumed by the LangGraph runtime via the already frozen
 `POST /v1/chat` endpoint in M3. It is not directly public in M2.
 
-## M3 — Agent chat (not implemented)
+## M3a — Agent chat (new endpoint, locally unverified)
 
 ```http
 POST /v1/chat
+Content-Type: application/json
 ```
+
+Request:
+
+```json
+{
+  "query": "根据合同，验收后付款期限是多少天？",
+  "document_id": "uuid-of-an-indexed-document",
+  "session_id": null
+}
+```
+
+`query` is required (1–2000 chars); `document_id` and `session_id`
+are optional UUIDs. If omitted, `session_id` is generated as a correlation
+identifier **only**; conversation persistence starts in M4.
+
+Response:
+
+```json
+{
+  "request_id": "generated-uuid",
+  "session_id": "generated-uuid",
+  "status": "answered",
+  "intent": "search_documents",
+  "answer": "根据合同，服务验收后付款期限是三十日。[S1]",
+  "tools_called": ["search_documents"],
+  "steps": 1,
+  "sources": [
+    {
+      "id": "S1",
+      "document_id": "uuid-of-an-indexed-document",
+      "chunk_id": "qdrant-chunk-uuid",
+      "filename": "contract.txt",
+      "page": null,
+      "section": null,
+      "evidence": "..."
+    }
+  ]
+}
+```
+
+The values above are *illustrative*, not a recorded test result.
+
+Current tool names: `search_documents` (real M2 RAG answer) and
+`query_document_metadata` (real PostgreSQL read). A simple deterministic
+router selects one or both tools. The API does not expose arbitrary tool names
+or allow unregistered write operations.
+
+Errors: `422` invalid request/tool input; `503` failed service/model
+dependency. API returns JSON errors without exposing stack traces.
+
+Check: `scripts\check_m3a.bat`.
+
+**Not yet implemented:** M3b LLM-assisted tool planning, entity extraction,
+document summarization; M4 conversation memory/checkpoint; M6 HITL/retries.
 
 ## M4 — Sessions (not implemented)
 
