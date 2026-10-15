@@ -5,7 +5,7 @@ explicit document-analysis format preference may be written.
 """
 
 import asyncio
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import asyncpg
 import httpx
@@ -57,7 +57,7 @@ async def main() -> None:
         try:
             row = await pg.fetchrow(
                 "SELECT id, user_id, content, is_indexed FROM memories WHERE id=$1",
-                uuid4() if not memory_id else __import__("uuid").UUID(memory_id),
+                UUID(memory_id),
             )
             assert row and str(row["user_id"]) == user_a and row["is_indexed"], row
         finally:
@@ -94,7 +94,7 @@ async def main() -> None:
 
     memory = LongTermMemory()
     different_user = await memory.search(
-        __import__("uuid").UUID(user_b), "合同分析主体金额期限风险引用"
+        UUID(user_b), "合同分析主体金额期限风险引用"
     )
     assert different_user == [], different_user
 
@@ -102,7 +102,7 @@ async def main() -> None:
     try:
         count = await pg.fetchval(
             "SELECT COUNT(*) FROM memories WHERE user_id=$1",
-            __import__("uuid").UUID(user_a),
+            UUID(user_a),
         )
         assert count == 1, count
     finally:
