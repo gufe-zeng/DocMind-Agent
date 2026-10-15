@@ -151,6 +151,7 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
             # dialogue; do not save raw retrieved excerpts in Redis.
             await store.append_turn(
                 sid,
+                user_id=str(user_id) if user_id else None,
                 document_id=document_id,
                 query=request.query,
                 resolved_query=resolved_query,
@@ -172,6 +173,11 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                 sources=result.get("sources", []),
                 context_applied=used_context,
                 effective_document_id=UUID(document_id) if document_id else None,
+                retrieved_memories=[hit.public_dict() for hit in recalled],
+                memory_applied=bool(hint and any(
+                    name in result.get("tools_called", [])
+                    for name in ("search_documents", "summarize_document")
+                )),
             )
     except SessionBusyError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
