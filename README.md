@@ -317,6 +317,32 @@ must not be exposed on a public network.
 
 See [Memory Design](docs/MEMORY.md).
 
+## M4b — Long-term preference + Checkpoint recovery
+
+M4b is implemented, **local acceptance pending**. It stores an explicitly
+requested contract-output format in PostgreSQL and Qdrant `memories_v1`.
+A new session can recall the preference using the same demo `user_id`
+and pass its whitelisted fields into the RAG answer format. No arbitrary
+document text or chat history is automatically promoted.
+
+A separate test interrupts LangGraph before a real read-only tool, then
+continues from a PostgreSQL checkpoint using a fresh database connection.
+
+In Windows CMD, keep the existing vLLM service running:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m4b.bat
+scripts\check_m4b_resume.bat
+```
+
+Expected: `M4b MEMORY PASS` and `M4b CHECKPOINT PASS`.
+
+**Security boundary:** `user_id` is a caller-provided demonstration UUID,
+not an authenticated identity. Keep the API local-only.
+
 ## Related Project
 
 Inference serving and observability base:
