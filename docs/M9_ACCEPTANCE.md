@@ -83,3 +83,41 @@ tuning step unless diagnostics show a single timeout at 420 seconds.
 The separate Grafana local dashboard verification remains pending for
 full frozen V1 checklist sign-off. The M9 CLI demo does not establish
 production authentication or real-world legal correctness.
+
+## 2026-10-15: hotpatch CLI import-path mismatch (CI patch pending)
+
+The user copied the patched Python modules into the running API container
+because Docker Hub metadata resolution was failing behind its configured
+mirror/proxy. A manual `python -c` check showed the source reliability
+policy was loaded with `timeout_seconds=420`, `max_retries=0`.
+
+Yet `scripts\\check_m9_live.bat` failed **before sending a chat request**:
+
+```text
+AttributeError: 'Settings' object has no attribute 'rag_cpu_timeout_seconds'
+```
+
+Root cause: `python scripts/check_m9.py live` starts with
+`/app/scripts` at the front of Python's import path and may resolve
+`app.core.config` from the original installed project distribution
+in site-packages instead of the hotpatched `/app/app` source tree.
+
+The Windows BAT scripts now launch
+`docker compose exec -T -e PYTHONPATH=/app api python -m scripts.check_m9 live`
+(or `base`), which prioritizes the matching source tree. No dependency
+installation, API rebuild or BASE rerun is needed.
+
+From Windows CMD after `git pull`:
+
+```cmd
+docker compose exec -T -e PYTHONPATH=/app api python -c "import app.core.config as c; print(c.__file__); print(c.get_settings().rag_cpu_timeout_seconds)"
+scripts\check_m9_live.bat
+```
+
+The first command must report `/app/app/core/config.py` and `420.0`
+(or the configured timeout value). If it still raises AttributeError,
+restore the hotpatched `app/core/config.py` with
+`docker compose cp app/core/config.py api:/app/app/core/config.py`
+and restart **only API** to reload its config, without rebuilding the image.
+
+M9 LIVE remains pending until the user reports the actual success footer.

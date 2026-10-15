@@ -108,3 +108,22 @@ scripts\check_m8_dashboards.bat
 
 M9 是固定合成场景下的 API/CLI Demo，不是已经实现的 Web 前端。
 它不证明真实合同的总体准确率、引用语义蕴含、吞吐量、生产鉴权或不限场景自主规划。简历描述见 [RESUME_PROJECT.md](RESUME_PROJECT.md)，正式验收见 [M9_ACCEPTANCE.md](M9_ACCEPTANCE.md)。
+
+
+## Docker 镜像源不可用时的旧版导入路径问题
+
+若使用 `docker compose cp` 向旧 API 容器临时更新了 Python 文件，
+`python scripts/check_m9.py live` 可能优先导入原来安装在
+`site-packages` 的旧版 `app`，而不是 `/app/app` 中的新代码。
+新版本的 BASE/LIVE BAT 已统一设置 `PYTHONPATH=/app`，并以
+`python -m scripts.check_m9` 启动。先检查：
+
+```cmd
+git pull
+docker compose exec -T -e PYTHONPATH=/app api python -c "import app.core.config as c; print(c.__file__); print(c.get_settings().rag_cpu_timeout_seconds)"
+scripts\check_m9_live.bat
+```
+
+正常应输出 `/app/app/core/config.py` 和 `420.0`，无需重建镜像，
+也不需要重新运行已通过验收的 BASE。若上述检查仍缺失新字段，
+单独复制 `app/core/config.py` 到旧容器，按需重启 API。

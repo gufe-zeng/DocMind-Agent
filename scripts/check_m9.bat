@@ -8,7 +8,7 @@ if errorlevel 1 (
   echo M9 Compose configuration is invalid.
   exit /b 1
 )
-docker compose exec -T api python scripts/check_m9.py base
+docker compose exec -T -e PYTHONPATH=/app api python -m scripts.check_m9 base
 if errorlevel 1 (
   echo M9 DEMO BASE FAILED. Inspect: docker compose logs --tail 120 api
   exit /b 1

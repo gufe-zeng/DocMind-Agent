@@ -610,3 +610,14 @@ scripts\check_m9_live.bat
 
 The already-accepted BASE does not need another run. See
 [M9 acceptance and timeout evidence](docs/M9_ACCEPTANCE.md).
+
+
+### When Docker Hub proxy blocks image rebuild after a code hotpatch
+
+A code-only hotpatch inside the existing API container can leave the
+installed `app` wheel in site-packages older than the source tree in
+`/app/app`. M9 BAT scripts now force `PYTHONPATH=/app` and use module
+launch (`python -m scripts.check_m9`). Verify `app.core.config.__file__`
+and its `rag_cpu_timeout_seconds` field before M9 LIVE. This avoids another
+API image build but is temporary until the mirror/proxy issue is resolved.
+Details: [M9 acceptance](docs/M9_ACCEPTANCE.md).

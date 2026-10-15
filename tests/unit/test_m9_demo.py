@@ -96,3 +96,25 @@ def test_one_build_and_no_download_in_acceptance_scripts():
     assert "docker compose exec -t api python scripts/check_m9.py base" not in (
         root / "scripts" / "check_m9.bat"
     ).read_text()
+
+
+def test_m9_entrypoints_use_repo_source_and_module_launcher():
+    """Avoid importing the old installed wheel when container source is hot-patched."""
+    import os
+    import subprocess
+    import sys
+
+    root = Path(__file__).resolve().parents[2]
+    for name, mode in (("check_m9.bat", "base"), ("check_m9_live.bat", "live")):
+        text = (root / "scripts" / name).read_text(encoding="utf-8")
+        assert "-e PYTHONPATH=/app api python -m scripts.check_m9 " + mode in text
+
+    # Execute only --help; it must resolve the scripts namespace from repo root.
+    completed = subprocess.run(
+        [sys.executable, "-m", "scripts.check_m9", "--help"],
+        cwd=root,
+        env={**os.environ, "PYTHONPATH": str(root)},
+        capture_output=True, text=True, check=False, timeout=20,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "base" in completed.stdout and "live" in completed.stdout
