@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M3 — LangGraph Agent Core**。M0、M1、M2 均已通过本地功能验收。
+当前开发阶段：**M4 — Agent Memory**。M0–M3 均已通过本地功能验收。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -76,8 +76,8 @@ scripts\smoke_test.bat
 | M0 | Skeleton + PostgreSQL/Redis/Qdrant + Health | Completed (2026-10-11) |
 | M1 | Document Pipeline | Completed (2026-10-15) |
 | M2 | Hybrid RAG + Rerank + Citation | Completed (2026-10-15) |
-| M3 | LangGraph Agent + Tool Calling | In progress (M3a passed) |
-| M4 | Session/Long-term Memory + Checkpoint | Planned |
+| M3 | LangGraph Agent + Tool Calling | Completed (2026-10-15) |
+| M4 | Session/Long-term Memory + Checkpoint | In progress |
 | M5 | MCP Server + Client | Planned |
 | M6 | Retry + Timeout + Fallback + HITL | Planned |
 | M7 | RAG/Agent/System Eval | Planned |
@@ -270,7 +270,7 @@ scripts\check_m3b.bat
 ```
 
 Expected final output: `M3b PASS` and `M3b validation passed.`.
-Code and GitHub CI tests are complete; local live acceptance is pending.
+Local test **passed on 2026-10-15**, including real Qwen-assisted multi-tool planning, source-backed extraction and S1–S4 citation integrity.
 See [M3 Guide](docs/M3_GUIDE.md).
 
 ## Related Project

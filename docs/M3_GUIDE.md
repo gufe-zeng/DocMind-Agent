@@ -1,6 +1,6 @@
 # M3 — Agent Core & Tool Calling
 
-Status: **M3a Completed (2026-10-15); M3b implemented, local acceptance pending**.
+Status: **M3a + M3b Completed (2026-10-15) via local live integration tests**.
 
 ## Scope split
 
@@ -95,7 +95,7 @@ M3a passes only when the **real Docker API** and two independent tool
 paths have been verified. GitHub Actions unit tests by themselves do not
 establish end-to-end success.
 
-M3 as a whole remains In Progress until M3b completes.
+M3a and M3b have passed their live integration gates. See [M3B_ACCEPTANCE.md](M3B_ACCEPTANCE.md).
 
 ## M3b — Grounded extraction, summary and validated LLM tool ordering
 

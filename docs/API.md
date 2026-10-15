@@ -111,7 +111,7 @@ Return structure:
 This will be consumed by the LangGraph runtime via the already frozen
 `POST /v1/chat` endpoint in M3. It is not directly public in M2.
 
-## M3 — Agent chat (M3a accepted; M3b pending local acceptance)
+## M3 — Agent chat (accepted 2026-10-15)
 
 ```http
 POST /v1/chat
@@ -173,7 +173,7 @@ dependency. API returns JSON errors without exposing stack traces.
 Check: `scripts\check_m3a.bat`.
 
 **M3a accepted**: `scripts\check_m3a.bat`.
-**M3b implemented, local validation pending**: `scripts\check_m3b.bat`.
+**M3b accepted**: `scripts\check_m3b.bat` (2026-10-15).
 **Not yet implemented:** M4 conversation memory/checkpoints; M5 MCP; M6 HITL/retries.
 
 ## M4 — Sessions (not implemented)
