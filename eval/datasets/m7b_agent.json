@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "description": "Synthetic local-only Agent tool/task evaluation. Literal assertions test constrained facts and source integrity, not broad legal reasoning.",
+  "documents": [
+    {
+      "key": "contract",
+      "filename": "m7b_contract.txt",
+      "type": "text/plain",
+      "text": "甲方：甲方示例科技有限公司。\n乙方：乙方示例服务有限公司。\n付款条款：乙方服务验收合格后，甲方应在三十日内支付款项。\n违约责任：甲方逾期付款应按照合同约定支付违约金。"
+    },
+    {
+      "key": "pages",
+      "filename": "m7b_pages.pdf",
+      "type": "application/pdf",
+      "pages": [
+        "DOCMIND M7B PAGE ONE",
+        "DOCMIND M7B SECOND PAGE DELIVERY EVIDENCE"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "direct_metadata",
+      "doc": "contract",
+      "query": "查询文档信息",
+      "expected_tools": [
+        "query_document_metadata"
+      ],
+      "answer_contains": [
+        "m7b_contract.txt"
+      ],
+      "expected_status": "answered",
+      "require_sources": false
+    },
+    {
+      "id": "extract_supported_fields",
+      "doc": "contract",
+      "query": "提取甲乙方及付款期限",
+      "expected_tools": [
+        "extract_entities"
+      ],
+      "expected_status": "answered",
+      "expected_entities": {
+        "甲方": "甲方示例科技有限公司",
+        "乙方": "乙方示例服务有限公司",
+        "付款期限": "三十日"
+      },
+      "require_sources": true
+    },
+    {
+      "id": "mcp_metadata",
+      "doc": "contract",
+      "query": "通过MCP查询文档信息",
+      "expected_tools": [
+        "mcp_get_document"
+      ],
+      "expected_mcp_tools": [
+        "get_document"
+      ],
+      "answer_contains": [
+        "m7b_contract.txt"
+      ],
+      "expected_status": "answered"
+    },
+    {
+      "id": "mcp_clause",
+      "doc": "contract",
+      "query": "通过MCP查找违约责任条款",
+      "expected_tools": [
+        "mcp_find_clause"
+      ],
+      "expected_mcp_tools": [
+        "find_clause"
+      ],
+      "answer_contains": [
+        "违约责任"
+      ],
+      "expected_status": "answered",
+      "require_sources": true
+    },
+    {
+      "id": "mcp_pdf_page",
+      "doc": "pages",
+      "query": "通过MCP读取第2页的内容",
+      "expected_tools": [
+        "mcp_get_document_page"
+      ],
+      "expected_mcp_tools": [
+        "get_document_page"
+      ],
+      "answer_contains": [
+        "SECOND PAGE DELIVERY EVIDENCE"
+      ],
+      "expected_status": "answered",
+      "expected_page": 2,
+      "require_sources": true
+    },
+    {
+      "id": "mcp_search",
+      "doc": "contract",
+      "query": "通过MCP检索逾期付款违约金",
+      "expected_tools": [
+        "mcp_search_documents"
+      ],
+      "expected_mcp_tools": [
+        "search_documents"
+      ],
+      "answer_contains": [
+        "违约金"
+      ],
+      "expected_status": "answered",
+      "require_sources": true
+    },
+    {
+      "id": "mcp_multitool",
+      "doc": "contract",
+      "query": "通过MCP查询文档信息并查找违约责任条款",
+      "expected_tools": [
+        "mcp_get_document",
+        "mcp_find_clause"
+      ],
+      "expected_mcp_tools": [
+        "get_document",
+        "find_clause"
+      ],
+      "answer_contains": [
+        "m7b_contract.txt",
+        "违约责任"
+      ],
+      "expected_status": "answered",
+      "require_sources": true
+    }
+  ]
+}
