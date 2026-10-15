@@ -1,6 +1,6 @@
 # M6 — Reliability and Human-in-the-Loop
 
-Status: **M6a implemented, Docker acceptance pending; M6b planned.**
+Status: **M6a Completed (2026-10-15); M6b in development.**
 
 ## M6a — Bounded Read-Only Tool Runtime
 
@@ -60,7 +60,7 @@ M6a PASS
 M6a reliability validation passed.
 ```
 
-The script uses real PostgreSQL/Qdrant/MCP for normal calls and injects
+The test **passed on 2026-10-15**. It uses real PostgreSQL/Qdrant/MCP for normal calls and injects
 transient errors in its separate smoke-test Python process only.
 No debug fault-injection API or additional network port is introduced.
 

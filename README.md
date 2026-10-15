@@ -415,7 +415,7 @@ See [MCP Guide](docs/MCP.md).
 
 ## M6a — Tool Runtime: Timeout, Retry and Safe Fallback
 
-**Implementation committed; local Docker acceptance pending.**
+**Completed (2026-10-15): real Docker acceptance passed.**
 
 All eight currently supported **read-only** Agent tools have individual
 timeouts and at most two retries for transient connection/timeout faults.
@@ -434,7 +434,7 @@ docker compose up -d --build api
 scripts\check_m6a.bat
 ```
 
-Expected: `M6a PASS` and `M6a reliability validation passed.`.
+Observed: `M6a PASS` and `M6a reliability validation passed.`.
 The test injects faults in its own process only. No additional model
 downloads or a live Qwen service are required.
 

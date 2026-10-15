@@ -275,7 +275,7 @@ LangGraph registry names such as `["mcp_find_clause"]`.
 Evidence results include deterministic source citations, source chunk IDs
 and PDF page metadata where available. No MCP HTTP port was added.
 
-## M6a — Agent Tool Reliability (implemented; acceptance pending)
+## M6a — Agent Tool Reliability (accepted 2026-10-15)
 
 `POST /v1/chat` now returns `retry_count` and `tool_events` in addition
 to previously accepted fields. A tool event reports the tool name,
