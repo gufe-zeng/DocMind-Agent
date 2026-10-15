@@ -179,6 +179,8 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                     for name in ("search_documents", "summarize_document")
                 )),
             )
+    except HTTPException:
+        raise
     except SessionBusyError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:
