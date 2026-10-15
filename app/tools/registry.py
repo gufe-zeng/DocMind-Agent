@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class SearchDocumentsArgs(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     query: str = Field(min_length=1, max_length=2000)
     document_id: str | None = None
 
