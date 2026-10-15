@@ -22,7 +22,10 @@ jobs:
       - name: Verify psycopg binary implementation
         run: |
           PSYCOPG_IMPL=binary python -c "from psycopg import pq; from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver; assert pq.__impl__ == 'binary', pq.__impl__; print('psycopg binary driver OK')"
+      - name: Verify evaluation package import outside checkout
+        working-directory: /tmp
+        run: python -c "from eval.rag_metrics import evaluate_retrieval; print('eval package import OK')"
       - name: Compile project
-        run: python -m compileall -q app mcp_server scripts
+        run: python -m compileall -q app mcp_server eval scripts
       - name: Run unit tests
         run: python -m pytest -q tests/unit
