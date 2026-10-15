@@ -36,6 +36,8 @@ class ChatResponse(BaseModel):
     answer: str
     tools_called: list[str]
     mcp_tools_called: list[str] = Field(default_factory=list)
+    retry_count: int = 0
+    tool_events: list[dict] = Field(default_factory=list)
     plan_source: str
     planner_fallback_reason: str | None = None
     steps: int
@@ -86,6 +88,7 @@ def _initial_state(
         "status": "starting",
         "sources": [],
         "tools_called": [],
+        "reliability_events": [],
     }
 
 
@@ -175,6 +178,8 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                     for step in result.get("tool_results", [])
                     if step.get("mcp_transport") == "stdio" and step.get("mcp_tool")
                 ],
+                retry_count=result.get("retry_count", 0),
+                tool_events=result.get("reliability_events", []),
                 plan_source=result.get("plan_source", "rules"),
                 planner_fallback_reason=result.get("planner_fallback_reason"),
                 steps=result.get("current_step", 0),

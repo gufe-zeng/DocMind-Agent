@@ -9,6 +9,7 @@ from typing import Any
 
 from app.agent.router import plan_tools
 from app.agent.state import AgentState
+from app.agent.reliability import execute_read_only_tool
 from app.tools.registry import invoke_tool
 from app.tools.mcp_bridge import clause_keyword_from_query, page_number_from_query
 
@@ -27,6 +28,8 @@ async def route_node(state: AgentState) -> dict[str, Any]:
         "planner_fallback_reason": decision.reason,
         "tool_results": [],
         "tools_called": [],
+        "reliability_events": [],
+        "retry_count": 0,
         "current_step": 0,
         "sources": [],
         "entities": [],
@@ -67,9 +70,15 @@ async def call_tool_node(state: AgentState) -> dict[str, Any]:
         arguments["query"] = state["query"]
         arguments["limit"] = 5
 
-    result = await invoke_tool(name, arguments=arguments)
+    execution = await execute_read_only_tool(
+        name, arguments=arguments, executor=invoke_tool,
+    )
     return {
-        "tool_results": [*state.get("tool_results", []), result],
+        "tool_results": [*state.get("tool_results", []), execution.result],
+        "reliability_events": [
+            *state.get("reliability_events", []), execution.event,
+        ],
+        "retry_count": state.get("retry_count", 0) + execution.event["retries"],
         "tools_called": [*state.get("tools_called", []), name],
         "current_step": state.get("current_step", 0) + 1,
         "next_tool": None,
@@ -172,6 +181,8 @@ async def synthesize_node(state: AgentState) -> dict[str, Any]:
         status = "step_limit"
     elif "citation_unverified" in step_statuses:
         status = "citation_unverified"
+    elif step_statuses and all(item == "tool_unavailable" for item in step_statuses):
+        status = "tool_unavailable"
     elif all(item == "no_evidence" for item in step_statuses):
         status = "no_evidence"
     elif any(item not in ("answered",) for item in step_statuses):

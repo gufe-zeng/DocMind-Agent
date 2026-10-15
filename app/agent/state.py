@@ -28,3 +28,4 @@ class AgentState(TypedDict, total=False):
     status: str
     sources: list[dict[str, Any]]
     tools_called: list[str]
+    reliability_events: list[dict[str, Any]]
