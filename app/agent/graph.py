@@ -32,7 +32,7 @@ def build_agent_graph(checkpointer=None, *, interrupt_before=None):
     )
     flow.add_edge("call_tool", "decide")
     flow.add_edge("synthesize", END)
-    return flow.compile(checkpointer=checkpointer)
+    return flow.compile(checkpointer=checkpointer, interrupt_before=interrupt_before)
 
 
 agent_graph = build_agent_graph()
