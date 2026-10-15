@@ -247,3 +247,16 @@ not prove every heading was followed.
 A caller-provided user UUID is not real authentication. Run locally only.
 Other preference classes and arbitrary long-term personal facts are not
 supported by this demo implementation.
+
+
+## M5a — MCP interface (not HTTP REST)
+
+The Document MCP Server is a separate **stdio** server process rather than
+a new public FastAPI path. Tool discovery and calls use the MCP protocol.
+Required names: `search_documents`, `get_document`,
+`get_document_page`, `find_clause`. Each tool validates IDs, limits
+returned source text and retains source metadata. `get_document_page`
+is meaningful only for PDFs with real page numbers.
+
+A dedicated SDK client smoke test is provided as `scripts\check_m5a.bat`.
+M5b will connect LangGraph through a reusable client adapter.

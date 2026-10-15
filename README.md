@@ -343,6 +343,39 @@ Expected: `M4b MEMORY PASS` and `M4b CHECKPOINT PASS`.
 **Security boundary:** `user_id` is a caller-provided demonstration UUID,
 not an authenticated identity. Keep the API local-only.
 
+## M5a — Document MCP Server (implementation ready; local acceptance pending)
+
+M5a implements the four **frozen V1 document MCP tools** using the official
+Python MCP SDK with JSON-RPC over **stdio**, not an imitation REST endpoint:
+
+| MCP tool | Purpose |
+|---|---|
+| `search_documents` | BGE Dense + Chinese BM25 + RRF source chunks |
+| `get_document` | PostgreSQL document status and metadata |
+| `get_document_page` | Indexed PDF page text with page/chunk provenance |
+| `find_clause` | Exact phrase/keyword lookup over document chunks |
+
+The MCP server is a **separate subprocess** launched inside the API container.
+`scripts/check_m5a.py` invokes it via real SDK `ClientSession`,
+`stdio_client` and the MCP `tools/list`/`tools/call` operations.
+The smoke test does not depend on vLLM; it reuses ModelScope BGE and existing
+PostgreSQL/Qdrant data. No new port or Docker volume is required.
+
+Windows CMD:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m5a.bat
+```
+
+Expected final output: `M5a MCP PASS` and `M5a validation passed.`.
+
+M5a proves the MCP Server/Client **transport** with an independent client.
+The LangGraph Agent continues to call its existing tools directly until
+**M5b** integrates the MCP client adapter. See [MCP Guide](docs/MCP.md).
+
 ## Related Project
 
 Inference serving and observability base:

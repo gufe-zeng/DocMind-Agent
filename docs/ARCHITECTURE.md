@@ -395,3 +395,16 @@ by `thread_id=session_id`. Transient graph fields are cleared at the
 start of each new turn. The session read endpoint is a frozen V1 API.
 Long-term structured/semantic memory and deliberate interruption-resume
 remain M4b tasks. This is an unauthenticated local demo only.
+
+
+## M5a Document MCP Server — implemented, pending local acceptance
+
+The frozen four-tool MCP contract is exposed through an official MCP Python
+SDK `FastMCP` stdio subprocess. Its handlers read PostgreSQL document
+metadata, Qdrant source chunks and M2 Hybrid Retrieval evidence. The MCP
+client smoke test discovers/calls the tools over actual JSON-RPC stdio rather
+than direct imports. The normal LangGraph business-tool registry still uses
+its existing Python handlers at this checkpoint. M5b introduces the Agent
+MCP Client Adapter and verifies routing from a real Agent turn.
+
+No unauthenticated public MCP network port is opened. See [MCP Guide](MCP.md).

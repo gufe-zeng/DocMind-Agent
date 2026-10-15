@@ -24,3 +24,13 @@ Do **not** claim RAG, Agent, Memory or MCP functionality before the correspondin
 - Do not claim an unrestricted autonomous LLM planner, general legal NER, or full-document summarization accuracy.
 - M3b code and unit tests exist but are not locally accepted yet.
 - Memory, MCP, HITL and quantitative Agent evaluation remain future modules.
+
+
+## M5 MCP integration (pending local acceptance)
+
+M5a uses the official Python MCP SDK, a separately launched stdio
+server process, and the MCP initialize/tools-list/tools-call lifecycle.
+Four bounded read-only document tools expose provenance-aware PostgreSQL,
+Qdrant and Hybrid Retrieval results. This is distinct from M3's direct
+Python function registry. M5a transport acceptance and M5b Agent integration
+must both pass before M5 is considered complete.
