@@ -408,3 +408,17 @@ its existing Python handlers at this checkpoint. M5b introduces the Agent
 MCP Client Adapter and verifies routing from a real Agent turn.
 
 No unauthenticated public MCP network port is opened. See [MCP Guide](MCP.md).
+
+## M6a — Reliability runtime (pending local acceptance)
+
+A read-only reliability wrapper around the typed Tool Registry applies
+per-tool deadlines and at most two retries for transient failures.
+Successful replies preserve the existing tool output; exhausted failures
+return a non-factual `tool_unavailable` result without citations.
+Graph state holds `reliability_events` and `retry_count`. Combined
+workflows retain successful evidence and return a `partial` status.
+The previously accepted eight-step bound remains unchanged.
+
+Write actions are intentionally excluded from this executor.
+FR-10's protected `save_review_note` and Human Approval endpoint
+will be implemented and verified in M6b.

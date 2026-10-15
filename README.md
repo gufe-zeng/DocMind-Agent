@@ -413,6 +413,34 @@ Expected final lines: `M5b AGENT MCP PASS` and
 **M5b passed real local Docker acceptance on 2026-10-15.** The actual Agent reported MCP tool names, original chunks, PDF page 2 provenance, and multi-tool execution. M5 is Completed; see [M5b acceptance](docs/M5B_ACCEPTANCE.md).
 See [MCP Guide](docs/MCP.md).
 
+## M6a — Tool Runtime: Timeout, Retry and Safe Fallback
+
+**Implementation committed; local Docker acceptance pending.**
+
+All eight currently supported **read-only** Agent tools have individual
+timeouts and at most two retries for transient connection/timeout faults.
+Malformed arguments and provenance violations are not retried.
+Exhausted transient failures return a `tool_unavailable` response with
+no fabricated facts or citations. Multi-tool tasks preserve successful
+evidence and return `partial` when another tool is unavailable.
+Retries do not consume extra LangGraph steps.
+
+Windows CMD acceptance:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m6a.bat
+```
+
+Expected: `M6a PASS` and `M6a reliability validation passed.`.
+The test injects faults in its own process only. No additional model
+downloads or a live Qwen service are required.
+
+**M6b** is the separate `save_review_note` protected-write / HITL
+implementation. See [M6 Reliability Guide](docs/RELIABILITY.md).
+
 ## Related Project
 
 Inference serving and observability base:

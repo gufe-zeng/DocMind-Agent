@@ -274,3 +274,19 @@ The new `mcp_tools_called` array contains actual MCP tools such as
 LangGraph registry names such as `["mcp_find_clause"]`.
 Evidence results include deterministic source citations, source chunk IDs
 and PDF page metadata where available. No MCP HTTP port was added.
+
+## M6a — Agent Tool Reliability (implemented; acceptance pending)
+
+`POST /v1/chat` now returns `retry_count` and `tool_events` in addition
+to previously accepted fields. A tool event reports the tool name,
+attempts, retries, timeout, elapsed time and success/fallback status.
+An exhausted transient failure yields a source-free `tool_unavailable`
+response, or `partial` when a different tool succeeded.
+
+The maximum retry allowance is **2**; this is three attempts total.
+Invalid document IDs and source contract errors are never silently
+converted to legitimate document results. The eight-step Agent limit
+continues to count tool nodes, not network retry attempts.
+
+Error/fallback validation: `scripts\check_m6a.bat`.
+No protected-write endpoint is added in M6a.
