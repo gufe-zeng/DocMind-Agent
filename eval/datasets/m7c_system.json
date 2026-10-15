@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "description": "Synthetic isolated-document system latency fixture for four serial rule/MCP Agent requests, standalone retrieval/rerank, optional real Qwen probe.",
+  "document": {
+    "filename": "m7c_latency.txt",
+    "type": "text/plain",
+    "text": "甲方：M7C测试采购有限公司。\n乙方：M7C测试服务有限公司。\n付款条款：服务验收合格后，甲方在三十日内支付款项。\n违约责任：如果甲方逾期付款，应当按合同约定支付违约金。"
+  },
+  "stage_query": "服务验收后三十日内付款及逾期违约金",
+  "live_question": "服务验收合格后，甲方应在多少日内付款？",
+  "agent_cases": [
+    {
+      "id": "metadata",
+      "query": "查询文档信息",
+      "expected_tools": [
+        "query_document_metadata"
+      ],
+      "expected_mcp_tools": []
+    },
+    {
+      "id": "mcp_clause",
+      "query": "通过MCP查找违约责任条款",
+      "expected_tools": [
+        "mcp_find_clause"
+      ],
+      "expected_mcp_tools": [
+        "find_clause"
+      ]
+    },
+    {
+      "id": "mcp_search",
+      "query": "通过MCP检索逾期付款违约金",
+      "expected_tools": [
+        "mcp_search_documents"
+      ],
+      "expected_mcp_tools": [
+        "search_documents"
+      ]
+    },
+    {
+      "id": "mcp_multi",
+      "query": "通过MCP查询文档信息并查找违约责任条款",
+      "expected_tools": [
+        "mcp_get_document",
+        "mcp_find_clause"
+      ],
+      "expected_mcp_tools": [
+        "get_document",
+        "find_clause"
+      ]
+    }
+  ]
+}
