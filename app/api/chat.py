@@ -113,6 +113,12 @@ async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
                     raise ValueError("Saving an explicit preference requires user_id.")
                 fields = parse_format_preference(request.query)
                 saved = await memory.save_format(user_id, fields)
+                await store.append_turn(
+                    sid, user_id=str(user_id), document_id=document_id,
+                    query=request.query, resolved_query=request.query,
+                    answer="已记录合同分析输出格式：" + "、".join(fields),
+                    status="memory_saved",
+                )
                 return ChatResponse(
                     request_id=request_id, session_id=session_id,
                     status="memory_saved", intent="save_explicit_preference",
