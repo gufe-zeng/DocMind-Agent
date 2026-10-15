@@ -8,7 +8,7 @@ from app.tools.registry import SearchDocumentsArgs
 
 async def search_documents(args: SearchDocumentsArgs) -> dict[str, Any]:
     answer = await answer_document_question(
-        args.query, document_id=args.document_id
+        args.query, document_id=args.document_id, format_hint=args.format_hint
     )
     payload = answer_to_dict(answer)
     return {

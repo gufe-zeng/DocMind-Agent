@@ -9,6 +9,7 @@ class AgentState(TypedDict, total=False):
     document_id: str | None
     query: str
     messages: list[Any]
+    format_hint: str | None
 
     intent: str
     plan: list[str]

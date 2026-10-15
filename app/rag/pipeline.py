@@ -51,6 +51,7 @@ async def answer_document_question(
     question: str,
     *,
     document_id: str | None = None,
+    format_hint: str | None = None,
 ) -> RagAnswer:
     """Run RAG. Model-service and reranker failures propagate explicitly."""
     query = normalize_question(question)
@@ -85,8 +86,14 @@ async def answer_document_question(
     )
     sources = build_sources(ranked, max_evidence_chars=settings.rag_max_evidence_chars)
 
+    # Only whitelisted, explicitly saved format labels may enter format_hint.
+    formatting = (
+        "已确认用户偏好：请尽量按【" + format_hint + "】栏目简要组织回答；"
+        "仅报告证据支持的事实，缺失项写“文档未说明”；每项事实保留[S1]等引用。"
+        if format_hint else ""
+    )
     messages = [
-        {"role": "system", "content": SYSTEM_INSTRUCTIONS},
+        {"role": "system", "content": SYSTEM_INSTRUCTIONS + formatting},
         {
             "role": "user",
             "content": (

@@ -18,7 +18,9 @@ async def summarize_document(args: SummarizeDocumentArgs) -> dict[str, Any]:
         f"用户要求：{args.query[:500]}"
     )
     result = answer_to_dict(
-        await answer_document_question(focus, document_id=str(args.document_id))
+        await answer_document_question(
+            focus, document_id=str(args.document_id), format_hint=args.format_hint
+        )
     )
     scope = "retrieved_evidence_only"
     return {

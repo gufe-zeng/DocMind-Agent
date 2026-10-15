@@ -54,6 +54,8 @@ async def call_tool_node(state: AgentState) -> dict[str, Any]:
     arguments: dict[str, Any] = {"document_id": state.get("document_id")}
     if name in ("search_documents", "extract_entities", "summarize_document"):
         arguments["query"] = state["query"]
+    if name in ("search_documents", "summarize_document") and state.get("format_hint"):
+        arguments["format_hint"] = state["format_hint"]
 
     result = await invoke_tool(name, arguments=arguments)
     return {

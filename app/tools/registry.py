@@ -16,6 +16,7 @@ class SearchDocumentsArgs(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     query: str = Field(min_length=1, max_length=2000)
     document_id: str | None = None
+    format_hint: str | None = Field(default=None, max_length=30)
 
 
 class DocumentMetadataArgs(BaseModel):
@@ -34,6 +35,7 @@ class SummarizeDocumentArgs(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     query: str = Field(min_length=1, max_length=2000)
     document_id: UUID
+    format_hint: str | None = Field(default=None, max_length=30)
 
 
 ToolHandler = Callable[[BaseModel], Awaitable[dict[str, Any]]]
