@@ -15,7 +15,7 @@ async def summarize_document(args: SummarizeDocumentArgs) -> dict[str, Any]:
     focus = (
         "请根据指定文档的可检索证据，简要总结能够确认的主体、付款条件、"
         "履约义务和违约责任。不得推测未覆盖的部分。"
-        f"用户要求：{args.query}"
+        f"用户要求：{args.query[:500]}"
     )
     result = answer_to_dict(
         await answer_document_question(focus, document_id=str(args.document_id))
