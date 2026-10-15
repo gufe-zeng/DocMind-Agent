@@ -136,7 +136,11 @@ def evaluate_agent(
         tools = _names(response.get("tools_called")) if response else ()
         mcp = _names(response.get("mcp_tools_called")) if response else ()
         chosen = len(tools) == len(set(tools)) and set(tools) == set(case.expected_tools)
-        mcp_chosen = mcp == case.expected_mcp_tools
+        mcp_chosen = (
+            response is not None
+            and isinstance(response.get("mcp_tools_called"), list)
+            and mcp == case.expected_mcp_tools
+        )
         success = _task_success(case, response)
         runtime_failed = response is None or response.get("status") in RUNTIME_FAILURE_STATUSES
         if response is not None and not isinstance(response.get("status"), str):
