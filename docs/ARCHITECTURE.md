@@ -384,3 +384,14 @@ from multiple tools into one consistent answer-wide source namespace.
 All document extractions are source-anchored. Long-document summaries are
 explicitly limited to retrieved evidence. Persistent memory, MCP and HITL
 remain later modules. See [M3 Guide](M3_GUIDE.md).
+
+## M4a Implementation (local acceptance pending)
+
+Session memory now resides in Redis under a UUID-scoped key with one-hour
+idle TTL and a six-turn bound. Short same-document follow-ups can reuse
+document_id and the previous question for deterministic query expansion.
+LangGraph persists node checkpoints through `AsyncPostgresSaver`, keyed
+by `thread_id=session_id`. Transient graph fields are cleared at the
+start of each new turn. The session read endpoint is a frozen V1 API.
+Long-term structured/semantic memory and deliberate interruption-resume
+remain M4b tasks. This is an unauthenticated local demo only.

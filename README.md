@@ -273,6 +273,50 @@ Expected final output: `M3b PASS` and `M3b validation passed.`.
 Local test **passed on 2026-10-15**, including real Qwen-assisted multi-tool planning, source-backed extraction and S1–S4 citation integrity.
 See [M3 Guide](docs/M3_GUIDE.md).
 
+## M4a — Redis session history + PostgreSQL LangGraph checkpoints
+
+Status: **code implemented, local acceptance pending**.
+
+New behavior preserves recent conversation context under one `session_id`:
+
+```text
+POST /v1/chat (first question + document_id)
+    ↓ Redis: create TTL-limited session, store bounded history
+    ↓ LangGraph: checkpoint each node to PostgreSQL
+POST /v1/chat (follow-up + same session_id, no document_id)
+    ↓ Load Redis conversation/document context
+    ↓ Conservative reference expansion for short follow-ups
+    ↓ Reuse current document filter; run real RAG/Agent
+    ↓ Refresh Redis TTL + durable PostgreSQL checkpoint
+GET /v1/sessions/{session_id}
+    ↓ Return bounded turns and checkpoint_saved status
+```
+
+Redis retains up to **6 turns** per session with **1-hour idle TTL**.
+LangGraph uses official PostgreSQL `AsyncPostgresSaver`, not a fake memory
+table. Old per-turn graph state is reset explicitly before every new turn.
+
+**Local validation (Windows CMD, keep vLLM on host port 8000 running):**
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m4a.bat
+```
+
+Expected final line: `M4a PASS`. The script creates a contract, performs
+two live-Qwen turns including `如果逾期呢？`, checks that the second turn
+reuses the document, verifies Redis expiry and checks the PostgreSQL
+checkpoint from a separate database connection.
+
+Important: M4a does **not** implement durable cross-session preferences,
+Qdrant `memories_v1`, or robust interrupted-run resume controls.
+Those belong to M4b. The API has no end-user authentication yet and
+must not be exposed on a public network.
+
+See [Memory Design](docs/MEMORY.md).
+
 ## Related Project
 
 Inference serving and observability base:

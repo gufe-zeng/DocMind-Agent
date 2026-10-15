@@ -128,9 +128,11 @@ Request:
 }
 ```
 
-`query` is required (1–2000 chars); `document_id` and `session_id`
-are optional UUIDs. If omitted, `session_id` is generated as a correlation
-identifier **only**; conversation persistence starts in M4.
+`query` is required (1–2000 chars); `document_id` and `session_id` are
+optional UUIDs. From M4a, `session_id` is a real Redis short-term session
+identifier, and LangGraph checkpoints share that thread ID. An omitted
+session ID starts a new session. A short follow-up with the same ID reuses
+its document context and may apply conservative query expansion.
 
 Response:
 
@@ -146,6 +148,8 @@ Response:
   "planner_fallback_reason": null,
   "steps": 1,
   "entities": [],
+  "context_applied": false,
+  "effective_document_id": "uuid-of-an-indexed-document",
   "sources": [
     {
       "id": "S1",
@@ -176,11 +180,39 @@ Check: `scripts\check_m3a.bat`.
 **M3b accepted**: `scripts\check_m3b.bat` (2026-10-15).
 **Not yet implemented:** M4 conversation memory/checkpoints; M5 MCP; M6 HITL/retries.
 
-## M4 — Sessions (not implemented)
+## M4a — Session history (implemented, local acceptance pending)
 
 ```http
 GET /v1/sessions/{session_id}
 ```
+
+Response: session UUID, most recent document UUID, `turn_count`, bounded
+`turns` with original user query, context-expanded query, answer/status/time,
+`created_at`, `updated_at`, and `checkpoint_saved` flag.
+
+Redis idle expiration: 3600 seconds; maximum 6 turns per session.
+An expired/unknown session returns HTTP 404. Concurrent POST /v1/chat
+requests using the same `session_id` return HTTP 409 while a session lock
+is held (300-second time-limited lease).
+
+Usage:
+
+```cmd
+curl --noproxy "*" http://127.0.0.1:8090/v1/sessions/your-session-uuid
+```
+
+To follow up without passing document_id again:
+
+```json
+{"query":"如果逾期呢？","session_id":"your-session-uuid"}
+```
+
+This is a local-development feature. Session IDs function as bearer tokens
+and there is no access control yet. Do not expose this API to the internet.
+
+M4b long-term preferences/semantic memory and workflow resume are not
+yet implemented.
+
 
 ## M6 — Human-in-the-loop approval (not implemented)
 
