@@ -260,3 +260,17 @@ is meaningful only for PDFs with real page numbers.
 
 A dedicated SDK client smoke test is provided as `scripts\check_m5a.bat`.
 M5b will connect LangGraph through a reusable client adapter.
+
+## M5b — Agent MCP tool reporting (pending Docker acceptance)
+
+Explicit MCP requests use the unchanged POST /v1/chat API. Example:
+
+```json
+{"query":"通过MCP查找违约责任条款","document_id":"indexed-document-uuid"}
+```
+
+The new `mcp_tools_called` array contains actual MCP tools such as
+`["find_clause"]`. The original `tools_called` field instead includes
+LangGraph registry names such as `["mcp_find_clause"]`.
+Evidence results include deterministic source citations, source chunk IDs
+and PDF page metadata where available. No MCP HTTP port was added.

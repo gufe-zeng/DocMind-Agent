@@ -85,7 +85,7 @@ The Python MCP SDK package is a new dependency, so rebuild the API image.
 - No user authentication/authorization is present in the local demo.
   Do not grant this subprocess access to untrusted users.
 
-## M5b — Agent MCP client adapter (implementation in progress)
+## M5b — Agent MCP client adapter (implemented; local verification pending)
 
 M5b adds an adapter under `app/mcp_client/` and allows selected
 LangGraph business tool calls to route through MCP ClientSession.
@@ -94,3 +94,48 @@ Server and produced a source-grounded answer or metadata result.
 
 Failure surfaces and bounded transport timeouts are exercised during
 M5b. General retry/fallback/HITL policies stay in M6.
+
+### M5b implementation
+
+LangGraph now exposes four internally named MCP tools. Explicit MCP
+queries use rule-based routing; other queries preserve the accepted M3/M4
+behavior. The typed registry validates UUID/page/keyword arguments and
+invokes `app.mcp_client.adapter.call_document_mcp` via
+`app.tools.mcp_bridge`. The adapter spawns a distinct MCP stdio server,
+performs initialize/tools-list/tools-call, verifies successful structured
+data and enforces finite read deadlines.
+
+Returned source excerpts include real document_id, chunk_id, filename
+and PDF page or section metadata. Multi-tool answers use the existing
+LangGraph global citation renumbering. HTTP `mcp_tools_called` records
+the actual MCP tool names (different from the Agent tool names).
+
+### M5b local acceptance
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m5b.bat
+```
+
+The smoke test uses TXT and two-page PDF fixtures. It exercises MCP
+clause search, metadata lookup, PDF page lookup, hybrid retrieval and
+a sequential metadata-plus-clause LangGraph task through `/v1/chat`.
+
+Expected console lines:
+
+```text
+PASS Agent -> MCP find_clause source citation
+PASS Agent -> MCP get_document metadata
+PASS Agent -> MCP get_document_page PDF provenance
+PASS Agent -> MCP search_documents Hybrid RAG evidence
+PASS LangGraph multi-tool MCP sequence and citations
+M5b AGENT MCP PASS
+M5b Agent MCP validation passed.
+```
+
+Errors from MCP are not silently replaced with successful Python results.
+Read deadlines exist; general retry/fallback/HITL remains M6.
+This local stdio demo has no authentication and must not be exposed
+on a public network. MCP subprocesses are created per call, not pooled.

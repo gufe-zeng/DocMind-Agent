@@ -376,6 +376,43 @@ M5a **passed** real MCP Server/Client transport acceptance using an independent 
 The LangGraph Agent continues to call its existing tools directly until
 **M5b** integrates the MCP client adapter. See [MCP Guide](docs/MCP.md).
 
+## M5b — LangGraph Agent MCP integration (local acceptance pending)
+
+M5b adds a real Model Context Protocol ClientSession adapter inside the
+existing LangGraph Agent, without changing the accepted M2–M4 execution.
+Explicit MCP queries route to four read-only typed Agent tools:
+
+| LangGraph tool | MCP Server tool |
+|---|---|
+| `mcp_find_clause` | `find_clause` |
+| `mcp_get_document` | `get_document` |
+| `mcp_get_document_page` | `get_document_page` |
+| `mcp_search_documents` | `search_documents` |
+
+The flow is HTTP /v1/chat → LangGraph → typed registry → official
+stdio MCP client → separate MCP server subprocess → document evidence.
+Every response records both `tools_called` and `mcp_tools_called` so the
+protocol boundary is observable. Existing ordinary RAG/Agent queries still
+use their original tools; MCP results are sourced excerpts, not new
+LLM-generated answers.
+
+Run in Windows CMD:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m5b.bat
+```
+
+The test drives all four MCP tools and one two-tool Agent workflow through
+the live HTTP API, checking chunk/document/page provenance and citations.
+Expected final lines: `M5b AGENT MCP PASS` and
+`M5b Agent MCP validation passed.`. No vLLM is required.
+
+M5b remains **In Progress** until local Docker acceptance passes.
+See [MCP Guide](docs/MCP.md).
+
 ## Related Project
 
 Inference serving and observability base:
