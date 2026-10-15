@@ -146,12 +146,12 @@ during image build. The CI pipeline separately enforces `PSYCOPG_IMPL=binary`.
 In Windows CMD:
 
 ```cmd
-cd /d E:\\project\\DocMind-Agent
+cd /d E:\project\DocMind-Agent
 git pull
 docker compose up -d --build api
 docker compose ps
 docker compose exec -T api python -c "from psycopg import pq; print(pq.__impl__)"
-scripts\\check_m4a.bat
+scripts\check_m4a.bat
 ```
 
 Expected backend: `binary`. Do not delete Docker volumes or reinstall
