@@ -1,6 +1,6 @@
 # M2b Local Acceptance — 2026-10-15
 
-**Status: reranker PASS; RAG core PASS; live vLLM integration PENDING.**
+**Status: reranker PASS; RAG core PASS; live vLLM integration PASS. M2 completed.**
 
 ## Real ModelScope ONNX reranker
 
@@ -19,22 +19,20 @@
 - Cited real source: `m2b_payment.txt`, chunk ID `12f3a634-b12d-5e2b-9312-69a8dc1c30dc`.
 - Terminal result: **`M2b core PASS (deterministic mock LLM)`**.
 
-## Live vLLM integration — not yet accepted
+## Live vLLM integration — accepted
 
-- `scripts/check_m2b_live.bat` indexed document `d7a461fb-43b4-4076-bf23-9746bf608b99`.
-- Failure: `httpx.ConnectError: All connection attempts failed` at
-  `http://host.docker.internal:8000/v1/chat/completions`.
-- The stack trace shows failure at model-service connection, *after* indexing/retrieval.
-- Root cause still needs testing: vLLM may be stopped, not ready, or inaccessible through the host gateway.
-- The checked `llm-serving-ops/compose.yaml` maps vLLM `8000:8000`, FastAPI `8080:8080`, Nginx `8081:80`.
+- Initial live attempt could not connect to `host.docker.internal:8000`; the user restored the vLLM service.
+- Successful live run indexed document `82a150c3-3a1b-4bac-9ead-5d480dd2d0c2`.
+- Endpoint: `http://host.docker.internal:8000/v1`.
+- Model: `Qwen/Qwen3-0.6B`.
+- Answer: `根据合同，服务验收后付款期限是三十天。[S1]`.
+- Source: `m2b_payment.txt`, page=None, chunk_id `dcbba77c-fbdb-51a6-b3b6-05defdb7bca3`.
+- Terminal result: **`M2b LIVE PASS`** / **`M2b live validation passed.`**.
 
-## Next gate
+**Decision: M2 Completed (functional acceptance).**
 
-1. In `E:\project\llm-serving-ops`, run `docker compose ps` and `docker compose up -d vllm` as needed.
-2. Test Windows host: `curl --noproxy "*" http://127.0.0.1:8000/v1/models`.
-3. Test from DocMind API container: `http://host.docker.internal:8000/v1/models`.
-4. Re-run `scripts\check_m2b_live.bat` and inspect the model-generated citation.
-
-**Do not mark M2 complete until the live vLLM answer/citation gate passes.**
+Citation-ID validation checks source linkage, not semantic entailment.
+Numeric retrieval evaluation and response factuality are deferred to M7.
+History-aware query rewrite is not implemented yet and will be revisited in M4.
 
 This record is based on real user-provided Docker logs, not a GitHub Actions integration test.

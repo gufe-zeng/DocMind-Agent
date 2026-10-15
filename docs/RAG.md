@@ -1,6 +1,6 @@
 # RAG Design
 
-Status: **M1 complete; M2a accepted; M2b code implemented, local acceptance pending**.
+Status: **M1 and M2 functionally accepted (2026-10-15); quantified retrieval/faithfulness evaluation pending M7.**
 
 ```text
 Document:

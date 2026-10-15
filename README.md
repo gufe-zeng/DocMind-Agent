@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M2 — Hybrid RAG**。M0、M1 均已通过实际部署及本地验收。
+当前开发阶段：**M3 — LangGraph Agent Core**。M0、M1、M2 均已通过本地功能验收。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -75,8 +75,8 @@ scripts\smoke_test.bat
 |---|---|---|
 | M0 | Skeleton + PostgreSQL/Redis/Qdrant + Health | Completed (2026-10-11) |
 | M1 | Document Pipeline | Completed (2026-10-15) |
-| M2 | Hybrid RAG + Rerank + Citation | In progress |
-| M3 | LangGraph Agent + Tool Calling | Planned |
+| M2 | Hybrid RAG + Rerank + Citation | Completed (2026-10-15) |
+| M3 | LangGraph Agent + Tool Calling | In progress |
 | M4 | Session/Long-term Memory + Checkpoint | Planned |
 | M5 | MCP Server + Client | Planned |
 | M6 | Retry + Timeout + Fallback + HITL | Planned |
@@ -172,7 +172,7 @@ Cross-Encoder reranking, evidence IDs and OpenAI-compatible LLM generation.
 Implementation details: [docs/M2_GUIDE.md](docs/M2_GUIDE.md) ·
 M1 acceptance evidence: [docs/M1_ACCEPTANCE.md](docs/M1_ACCEPTANCE.md).
 
-## M2b — Reranker + grounded generation (model/core accepted; live pending)
+## M2b — Reranker + grounded generation (accepted on 2026-10-15)
 
 1. **ModelScope BGE Reranker**: BAAI/bge-reranker-base (ONNX, CPU).
    The initial ~1.11 GB download is considerably larger than the M1 embedding
@@ -193,9 +193,10 @@ scripts\check_reranker.bat
 scripts\check_m2b.bat
 ```
 
-The 2026-10-15 local logs confirm `check_reranker.bat` and `check_m2b.bat`
-**passed**. The second test uses a controlled mock LLM. The live test is still
-pending because `host.docker.internal:8000` could not be reached.
+The 2026-10-15 local logs confirm `check_reranker.bat`, `check_m2b.bat`,
+and **`check_m2b_live.bat`** passed. The live test called
+`Qwen/Qwen3-0.6B` through `host.docker.internal:8000` and returned a
+cited answer: `根据合同，服务验收后付款期限是三十天。[S1]`.
 
 Once `llm-serving-ops` serves a model on host port 8000, run:
 
@@ -203,9 +204,9 @@ Once `llm-serving-ops` serves a model on host port 8000, run:
 scripts\check_m2b_live.bat
 ```
 
-A real answer must contain a valid `[S1]` citation; otherwise the pipeline
-fails closed with `citation_unverified`. M2 remains In Progress until the
-real endpoint works.
+The real model answer contained a valid `[S1]` citation. **M2 functional
+acceptance is complete.** Query rewrite using session history and
+quantitative retrieval/faithfulness evaluation remain future tasks.
 
 See [M2 Guide](docs/M2_GUIDE.md), [M2b Acceptance](docs/M2B_ACCEPTANCE.md)
 and [M2a Acceptance](docs/M2A_ACCEPTANCE.md) for detailed checks.
