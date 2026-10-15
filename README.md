@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-**M0–M8 已通过本地功能与合成评测验收；M9 正在进行业务 Demo 和工程收尾。** 本地验收不代表生产就绪。
+**M0–M9 核心里程碑已于 2026-10-15 完成本地功能验收（M9 BASE + Qwen LIVE 均通过）。** 完整 V1 发布清单仍有 Grafana 实测和正式更新镜像构建两项待办；本地验收不代表生产就绪。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -82,7 +82,7 @@ scripts\smoke_test.bat
 | M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
 | M7 | RAG/Agent/System Eval | Completed: M7a/M7b/M7c synthetic local gates (2026-10-15) |
 | M8 | Agent Metrics + Trace | Completed: real PostgreSQL Trace, MCP/HITL and Prometheus acceptance (2026-10-15) |
-| M9 | Engineering wrap-up + Demo + Resume | BASE Completed; LIVE CPU-RAG timeout fix pending local acceptance |
+| M9 | Engineering wrap-up + Demo + Resume | Completed: BASE and live Qwen-grounded synthetic demo (2026-10-15) |
 
 ## M1a — Parse and chunk documents
 
@@ -553,14 +553,14 @@ The restart does not rebuild the API image; Qwen is not required.
 Expected: `M8 OBSERVABILITY PASS`.
 Observed: `M8 OBSERVABILITY PASS` and `M8 Observability validation passed.` on local Docker, including restart recovery. See [M8 acceptance](docs/M8_ACCEPTANCE.md) and [M8 guide](docs/OBSERVABILITY.md). Optional Grafana dashboards remain separately unverified.
 
-## M9 — End-to-end business demo and engineering wrap-up (pending local acceptance)
+## M9 — End-to-end business demo and engineering wrap-up (accepted 2026-10-15)
 
 M9 consolidates existing V1 capabilities rather than adding another public API:
 real synthetic TXT/PDF/DOCX upload/index, LangGraph two-tool MCP, extraction
 with source references, Redis follow-up, explicit cross-session preferences,
 HITL approval/idempotency and PostgreSQL Trace/Prometheus.
 
-Run Windows CMD **one new API build**, then the no-rebuild validators:
+The following are the reproducible validator commands when a current API image is available. **The local acceptance already passed using an updated existing container; a fresh image rebuild remains blocked by Docker registry/proxy DNS.**
 
 ```cmd
 cd /d E:\project\DocMind-Agent
@@ -569,17 +569,13 @@ docker compose up -d --build api
 scripts\check_m9.bat
 ```
 
-Expected: `M9 DEMO BASE PASS`. With Qwen/vLLM already listening on host 8000:
+Observed: `M9 DEMO BASE PASS` on real local Docker. With Qwen/vLLM already listening on host 8000:
 
 ```cmd
 scripts\check_m9_live.bat
 ```
 
-Expected: `M9 DEMO LIVE PASS`. The LIVE script reuses BASE's indexed
-fixture for one Qwen-grounded RAG answer; CPU rerank may take minutes.
-Neither validator rebuilds the Docker image. M9 BASE passed on 2026-10-15; LIVE failed with three 90-second
-RAG timeouts (270.30s) before Qwen. The RAG CPU budget/retry fix is
-pending local LIVE acceptance; M9 is not yet fully Completed.
+Observed: `M9 DEMO LIVE PASS` with `status=answered`, `search_documents`, one valid document-scoped source, and a verified Qwen/LLM trace. Both BASE and LIVE are accepted. The Qwen LIVE success followed a repaired single-attempt CPU-RAG budget and a corrected Python module import path. Neither validator builds the image. The updated **immutable image** is still pending network-dependent rebuild.
 
 - [M9 Demo guide](docs/M9_DEMO.md)
 - [M9 acceptance](docs/M9_ACCEPTANCE.md)
@@ -599,7 +595,7 @@ now use a configurable 420-second local CPU deadline **without automatic
 CPU-task retries**; serial ONNX scoring avoids overlapping calls.
 Other read-only tools retain their established <=2 transient retries.
 
-After GitHub CI succeeds, update the API image once and run only LIVE:
+The following is a **future immutable-image rebuild** step, not required for the already-passed local functional acceptance. Run it only after resolving Docker registry/proxy connectivity:
 
 ```cmd
 cd /d E:\project\DocMind-Agent
@@ -608,8 +604,7 @@ docker compose up -d --build api
 scripts\check_m9_live.bat
 ```
 
-The already-accepted BASE does not need another run. See
-[M9 acceptance and timeout evidence](docs/M9_ACCEPTANCE.md).
+M9 LIVE also passed on the locally hotpatched container; another costly model inference is not required now. See [M9 acceptance and timeout evidence](docs/M9_ACCEPTANCE.md).
 
 
 ### When Docker Hub proxy blocks image rebuild after a code hotpatch
@@ -621,3 +616,11 @@ launch (`python -m scripts.check_m9`). Verify `app.core.config.__file__`
 and its `rag_cpu_timeout_seconds` field before M9 LIVE. This avoids another
 API image build but is temporary until the mirror/proxy issue is resolved.
 Details: [M9 acceptance](docs/M9_ACCEPTANCE.md).
+
+### Final M9 evidence (2026-10-15)
+
+The source version was verified as `/app/app/core/config.py` with the repaired
+420-second RAG budget. The user's local `scripts\\check_m9_live.bat` run
+finished with `M9 DEMO LIVE PASS`, proving a real citation-grounded Qwen
+answer and model trace on the indexed synthetic contract. Grafana dashboard
+validation and a fresh Docker image rebuild are still open release items.

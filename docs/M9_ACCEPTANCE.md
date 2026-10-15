@@ -1,11 +1,11 @@
-# M9 Business Demo and Engineering Acceptance
+# M9 Business Demo and Engineering Acceptance — 2026-10-15
 
-**Status: BASE locally accepted; LIVE previously failed on CPU-RAG timeout.
-M9 is not complete until LIVE passes after the patch.**
+**Decision: M9 BASE and LIVE Completed — real local Docker functional acceptance.**
 
-## BASE — accepted 2026-10-15 (actual Windows Docker result)
+## BASE — accepted
 
-The user ran `scripts\check_m9.bat` and confirmed:
+The user ran `scripts\check_m9.bat` successfully against real PostgreSQL, Redis,
+Qdrant, LangGraph, MCP and Prometheus services.
 
 ```text
 PASS DocMind API /health and dependencies ready
@@ -22,102 +22,84 @@ M9 DEMO BASE PASS
 M9 base demo validation passed.
 ```
 
-The demo recorded seven completed synthetic workflow cases with distinct
-PostgreSQL trace identifiers. No generalization or production assertions
-follow from these seven cases.
+The BASE fixture passed seven synthetic business stages, produced trace IDs
+for each stage, and created an indexed contract reused by LIVE.
 
-## LIVE — failed 2026-10-15, cause confirmed by M8 PostgreSQL trace
+## LIVE — accepted
 
-```text
-status=tool_unavailable
-request_ms=272128
-llm_calls=0
-error_type=TimeoutError
-attempts=3
-timeout_s=90
-tool_ms=270300.42
-```
-
-The BGE CPU ONNX reranker was measured at 171.97–259.30 seconds in M7c.
-Under the old 90-second read-only RAG timeout, the tool exhausted three
-attempts and **never called Qwen**.
-
-**Patch under verification:** `search_documents` and
-`summarize_document` use a default 420-second CPU-RAG deadline, with
-zero retries. Reranker ONNX scoring is serialized by an in-process lock.
-`RAG_CPU_TIMEOUT_SECONDS` is configurable (300–600) through the
-Compose environment, and failed LIVE calls expose sanitized tool events.
-
-This repair is supported by unit/CI tests, but **does not constitute
-a successful LIVE result until the user reruns the Docker test**.
-
-## One-rebuild verification after CI success
-
-```cmd
-cd /d E:\project\DocMind-Agent
-git pull
-docker compose up -d --build api
-scripts\check_m9_live.bat
-```
-
-Do **not** repeat BASE; its demo documents persist in the named volume.
-Expected completion:
+The user verified that the current API source directory is used when invoking
+the test, with the expected runtime timeout setting:
 
 ```text
+/app/app/core/config.py
+420.0
+```
+
+The user then ran `scripts\check_m9_live.bat`:
+
+```text
+PASS DocMind API /health and dependencies ready
+PASS real Qwen hybrid-RAG answer with factual deadline/citation
+PASS Qwen request and token observations in Agent telemetry
+{
+  "stage": "qwen_grounded_rag",
+  "status": "answered",
+  "tools_called": ["search_documents"],
+  "mcp_tools_called": [],
+  "source_count": 1
+}
 M9 DEMO LIVE PASS
 M9 live demo validation passed.
 ```
 
-A no-rebuild runtime tuning option (only if 420 seconds is insufficient):
+The LIVE assertion checks: Agent `status=answered`; exactly one
+`search_documents` tool attempt; expected payment deadline in the answer;
+at least one valid, document-scoped citation; and a persisted Trace with an
+actual LLM call. This establishes **one real Qwen-grounded RAG answer** on
+the indexed synthetic contract, not semantic correctness on real contracts.
 
-```cmd
-set RAG_CPU_TIMEOUT_SECONDS=540
-docker compose up -d --no-deps --force-recreate api
-scripts\check_m9_live.bat
-```
+## Earlier failure, diagnosis, and repair
 
-This will recreate **only** the API container using its existing image,
-not rebuild or delete PostgreSQL/Qdrant/Redis volumes. No need to run this
-tuning step unless diagnostics show a single timeout at 420 seconds.
-
-The separate Grafana local dashboard verification remains pending for
-full frozen V1 checklist sign-off. The M9 CLI demo does not establish
-production authentication or real-world legal correctness.
-
-## 2026-10-15: hotpatch CLI import-path mismatch (CI patch pending)
-
-The user copied the patched Python modules into the running API container
-because Docker Hub metadata resolution was failing behind its configured
-mirror/proxy. A manual `python -c` check showed the source reliability
-policy was loaded with `timeout_seconds=420`, `max_retries=0`.
-
-Yet `scripts\\check_m9_live.bat` failed **before sending a chat request**:
+The initial LIVE attempt ended with:
 
 ```text
-AttributeError: 'Settings' object has no attribute 'rag_cpu_timeout_seconds'
+status=tool_unavailable
+error_type=TimeoutError
+attempts=3
+timeout_s=90
+tool_ms=270300.42
+llm_calls=0
 ```
 
-Root cause: `python scripts/check_m9.py live` starts with
-`/app/scripts` at the front of Python's import path and may resolve
-`app.core.config` from the original installed project distribution
-in site-packages instead of the hotpatched `/app/app` source tree.
+Earlier M7c measurements had found BGE CPU reranking took 171.97–259.30
+seconds, longer than the original 90-second tool deadline. The repaired
+`search_documents` and `summarize_document` execution budget is
+420 seconds by default, configurable within 300–600 seconds, with no retry
+for potentially non-cancellable ONNX inference; the reranker also has an
+in-process inference lock. Ordinary read-only tools retain the established
+bounded retry policies.
 
-The Windows BAT scripts now launch
-`docker compose exec -T -e PYTHONPATH=/app api python -m scripts.check_m9 live`
-(or `base`), which prioritizes the matching source tree. No dependency
-installation, API rebuild or BASE rerun is needed.
+A subsequent hotpatch test briefly raised an `AttributeError` for the
+new timeout setting because direct `python scripts/check_m9.py` could
+import the outdated installed copy of `app` from `site-packages`.
+The BAT scripts now set `PYTHONPATH=/app` and invoke
+`python -m scripts.check_m9`. The final successful run verified that
+`/app/app/core/config.py` was loaded and the budget was 420 seconds.
 
-From Windows CMD after `git pull`:
+## Deployment/build distinction and remaining release work
 
-```cmd
-docker compose exec -T -e PYTHONPATH=/app api python -c "import app.core.config as c; print(c.__file__); print(c.get_settings().rag_cpu_timeout_seconds)"
-scripts\check_m9_live.bat
-```
+**This acceptance used an existing API container with the repaired Python
+source copied in, because rebuilding the image was blocked by Docker Hub
+mirror/proxy DNS failures.** The successful local runtime test is valid,
+but it does **not** verify that a freshly rebuilt immutable API image
+contains all repaired code. Restore Docker mirror/proxy connectivity and
+complete one normal build when convenient; no volumes should be deleted.
 
-The first command must report `/app/app/core/config.py` and `420.0`
-(or the configured timeout value). If it still raises AttributeError,
-restore the hotpatched `app/core/config.py` with
-`docker compose cp app/core/config.py api:/app/app/core/config.py`
-and restart **only API** to reload its config, without rebuilding the image.
+M9 marks the frozen **core functional demo milestone Complete**. A
+separate Grafana dashboard and Prometheus scrape check remains pending for
+full frozen V1 release sign-off. Neither functional acceptance nor the tiny
+synthetic evaluation sets establish authenticated multi-tenancy, production
+deployment readiness, load capacity, or generalizable legal answer quality.
 
-M9 LIVE remains pending until the user reports the actual success footer.
+See [M9 Demo Guide](M9_DEMO.md), [Release Checklist](RELEASE_CHECKLIST.md),
+and [Resume Evidence](RESUME_PROJECT.md).

@@ -1,56 +1,67 @@
 # V1.0 evidence-based release checklist
 
-The original scope remains frozen in `docs/REQUIREMENTS.md`.
+The original frozen scope remains in `docs/REQUIREMENTS.md`.
 
 | Release criterion | Evidence | Status |
 |---|---|---|
-| PDF/DOCX/TXT parsing/indexing | M1a/M1b local acceptance | Accepted |
-| Dense + BM25 + RRF + BGE Rerank | M2a/M2b local acceptance | Accepted |
-| Source/page provenance and citation IDs | M2b/M5b/M7b | Accepted for tested cases |
-| Multiple typed Agent tool classes | M3b/M5b/M7b | Accepted |
-| Redis multi-turn memory | M4a local acceptance | Accepted |
-| Cross-session long-term preference | M4b local acceptance | Accepted |
-| PostgreSQL graph checkpoint/recovery | M4b/M6b | Accepted |
-| Real MCP Server/Client invocation | M5b/M6a | Accepted |
-| Guarded approval/HITL/replay | M6b/M8 | Accepted |
-| RAG, Agent, system evaluations | M7a/M7b/M7c | Accepted as synthetic smoke |
-| Durable trace + Prometheus | M8 local Docker acceptance | Accepted |
-| Grafana visualization | Optional Compose exists | Not yet verified locally |
-| Unified V1 business demonstration | M9 scripts implemented | BASE/LIVE pending |
+| PDF/DOCX/TXT parsing and indexing | M1a/M1b local acceptance | Accepted |
+| Dense + BM25 + RRF + BGE reranking | M2a/M2b local acceptance | Accepted |
+| Source/page provenance and valid citation IDs | M2b/M5b/M7b/M9 | Accepted on tested cases |
+| Bounded typed Agent tools | M3b/M5b/M7b/M9 | Accepted |
+| Redis multi-turn memory | M4a/M9 | Accepted |
+| Cross-session explicit preference | M4b/M9 | Accepted |
+| PostgreSQL LangGraph checkpoint/resume | M4b/M6b/M9 | Accepted |
+| Real MCP stdio Server/Client | M5b/M9 | Accepted |
+| HITL approval, no premature writes, idempotence | M6b/M8/M9 | Accepted |
+| RAG/Agent/System evaluations | M7a/M7b/M7c | Accepted as synthetic smoke |
+| Durable PostgreSQL trace + Prometheus | M8/M9 | Accepted |
+| Unified V1 business demo — BASE | M9 Docker live services | Accepted 2026-10-15 |
+| Qwen-grounded business demo — LIVE | M9 Qwen result with document citation and LLM trace | Accepted 2026-10-15 |
+| Provisioned Grafana dashboard / live Prometheus target | Compose files exist | **Not yet locally verified** |
+| Fresh immutable API Docker image with latest repairs | Docker mirror/proxy DNS blocked build | **Not yet verified** |
 
-## Before declaring the entire V1 release accepted
+## M9 acceptance detail
 
-1. Execute the M9 BASE and LIVE scripts and archive actual output.
-2. Independently validate that Grafana shows its dashboard and Prometheus
-   target `docmind-agent` reports UP.
-3. Preserve user privacy: use synthetic examples, avoid real identifying
-   document content, and do not publish session identifiers or credentials.
-4. Explicitly state that this is a local proof-of-concept, not a secured
-   multi-tenant production service.
+M9 BASE validated seven synthetic workflow stages, three document formats,
+real multi-tool MCP, document/page provenance, Redis/PG memory, long-term
+preferences, approval replay/idempotence, trace persistence and Prometheus.
 
-## Measured limitations
+M9 LIVE initially timed out three times at 90 seconds before a Qwen call.
+The corrected single-attempt 420-second RAG budget, ONNX lock and
+`PYTHONPATH=/app` module entrypoint were applied to the **existing**
+API container. The subsequent LIVE check produced:
 
-M7a: document-level Recall@3 and MRR@3 each 1.0 over three synthetic
-cases in a shared Qdrant collection. M7b: seven synthetic tasks achieved
-Task Success Rate=1.0 and Tool Selection Accuracy=1.0, with eight
-successful observed tool calls. These values do **not** estimate
-real-document generalization.
+```text
+PASS real Qwen hybrid-RAG answer with factual deadline/citation
+PASS Qwen request and token observations in Agent telemetry
+M9 DEMO LIVE PASS
+M9 live demo validation passed.
+```
 
-M7c: two standalone CPU BGE Rerank measurements took 171.97 and
-259.30 seconds. The old Docker image build took about 405.6 seconds.
-These are separate operations. The M8 cached-dependency Dockerfile is
-a structural improvement, not a verified time-saving percentage.
+Full evidence: [M9 Acceptance](M9_ACCEPTANCE.md).
 
-Remaining deployment gaps: caller-supplied user/session UUIDs are not
-authentication; no full RBAC, production observability retention,
-semantic entailment benchmark, concurrency/load testing, or hardened
-public deployment.
+## Remaining local release gates
 
-## M9 LIVE diagnostic and remediation
+1. Verify the Grafana dashboard can be opened and the Prometheus
+   `docmind-agent` target is UP, as documented in
+   [Observability](OBSERVABILITY.md).
+2. Once the Docker registry mirror/proxy works, build the latest API
+   image once without removing data volumes. The current runtime success
+   used manually hotpatched Python files and cannot substitute for a
+   reproducible immutable image build.
+3. Keep V1 described as a **locally accepted functional proof of concept**,
+   not a secured production service.
 
-Confirmed from PostgreSQL `agent_traces`: `TimeoutError` after three
-90-second RAG attempts, 270.30 seconds combined, and zero Qwen calls.
-Local BGE CPU rerank was previously measured at 172–259 seconds.
-New bounded CPU-RAG policy is 420 seconds (configurable to 600), with
-no retry of a still-running ONNX worker and serial rerank inference.
-Mark LIVE accepted only after the user reruns the repaired Docker image.
+## Performance and validity boundaries
+
+M7a reported Recall@3=1.0/MRR@3=1.0 on three synthetic cases, while M7b
+reported seven synthetic Agent tasks at Task Success Rate=1.0 and
+Tool Selection Accuracy=1.0 (eight observed tool calls). These scores
+are not estimates of real-contract performance. M7c measured two
+standalone CPU BGE reranks lasting 171.97 and 259.30 seconds, separate
+from the reported Docker build/mirror wait.
+
+The demo does not implement authenticated user identities/RBAC,
+contract-level tenant isolation, enterprise trace retention,
+representative semantic citation entailment tests, or concurrency/load
+testing. Do not claim production readiness.

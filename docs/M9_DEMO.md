@@ -1,10 +1,10 @@
 # M9 — V1 业务演示与工程收尾
 
-**状态：BASE 已通过本机验收；LIVE 曾因 CPU BGE 超时失败，修复已准备，待本机复验。**
+**状态：BASE 与真实 Qwen LIVE 均已于 2026-10-15 通过本机功能验收。** Grafana 和最新镜像的正式构建仍待验证。
 
 本阶段只集成冻结 V1 的已有能力，不增加新的公网 API、新模型和未经验证的功能。
 
-## 使用方法：只构建一次
+## 使用方法：已有本地验收通过；正式更新镜像构建待网络恢复
 
 在 Windows CMD：
 
@@ -15,7 +15,7 @@ docker compose up -d --build api
 scripts\check_m9.bat
 ```
 
-本次 API 构建一次后，`check_m9.bat` 不再触发构建。M8 已将第三方依赖安装移到源码 COPY 之前；源码发生普通改动时通常可复用 BuildKit 依赖缓存。
+以上是网络恢复后验证正式镜像的标准命令。**当前 M9 已通过本地运行功能验收，不必为证明同一结果而再次调用 Docker Hub。** 本次是在原有 API 容器内复制 Python 修复文件完成 LIVE 复验；最新镜像的构建仍受 Docker 镜像代理/DNS 故障阻碍。
 
 ### BASE：无需 Qwen（2026-10-15 已验收通过）
 
@@ -41,7 +41,7 @@ M9 base demo validation passed.
 `/app/data/uploads/.m9_demo_state.json` 和
 `/app/data/uploads/.m9_demo_report.json`，用于保存合成文档 UUID、各阶段状态与 Trace UUID。报告不包含合同内容或模型回答；不会上传到 GitHub。
 
-### LIVE：真实 Qwen，只增加一次问答（超时修复待验收）
+### LIVE：真实 Qwen，已完成本机验收
 
 运行 BASE 后，保证独立 `llm-serving-ops` 的 Qwen/vLLM 服务在 Windows 主机 8000 端口可访问，然后执行：
 
@@ -53,9 +53,11 @@ LIVE 复用 BASE 已索引的合同，通过 `POST /v1/chat` 验证
 `search_documents` → Dense+BM25+RRF → BGE Rerank → Qwen 生成
 → 有效文档引用，同时检查 M8 Trace 中存在真实 LLM 调用。
 
-预期：
+2026-10-15 实测输出：
 
 ```text
+PASS real Qwen hybrid-RAG answer with factual deadline/citation
+PASS Qwen request and token observations in Agent telemetry
 M9 DEMO LIVE PASS
 M9 live demo validation passed.
 ```
@@ -64,7 +66,7 @@ M9 live demo validation passed.
 
 **已诊断的 M9 LIVE 问题：** 原 `search_documents` 在 90 秒后超时，最多重复三次，总计耗时约 270 秒，`llm_calls=0`。新策略对包含 CPU Rerank 的 `search_documents` 和 `summarize_document` 采用 420 秒（可配置 300–600 秒）的整工具预算，超时不重试，避免已经启动的 CPU 工作线程被重复触发；ONNX 重排串行执行。
 
-如果之前已跑通 BASE，**不必再次上传三种格式或运行 BASE**。修复代码通过 CI 后只需：
+以上超时缺陷已修复，且经当前本机 LIVE 复验通过。下列操作仅用于未来在**网络恢复后**重建正式镜像，并非当前必须再做的验收步骤：
 
 ```cmd
 git pull
@@ -72,7 +74,7 @@ docker compose up -d --build api
 scripts\check_m9_live.bat
 ```
 
-重新构建这一次是为了更新运行时策略。后续如果 420 秒仍不够，可以先阅读实际 `tool_events.error_type`，再用 `set RAG_CPU_TIMEOUT_SECONDS=540` 与 `docker compose up -d --no-deps --force-recreate api` 调整运行配置，无需重新构建镜像。
+新镜像构建后的额外环境验证尚未进行。若未来 CPU 延迟高于 420 秒，先检查 `tool_events.error_type` 再调整 `RAG_CPU_TIMEOUT_SECONDS`，不要无证据地持续增加超时或重复运行昂贵推理。
 
 ## 分项评测，不需要重建镜像
 
@@ -127,3 +129,11 @@ scripts\check_m9_live.bat
 正常应输出 `/app/app/core/config.py` 和 `420.0`，无需重建镜像，
 也不需要重新运行已通过验收的 BASE。若上述检查仍缺失新字段，
 单独复制 `app/core/config.py` 到旧容器，按需重启 API。
+
+## 最终功能验收结论
+
+2026-10-15：M9 BASE（多格式文档、MCP、记忆、HITL、Trace）与
+M9 LIVE（`search_documents` → CPU BGE 重排 → 真实 Qwen 回答与文档引用）
+均已通过。本次 LIVE 使用 Docker 容器内的修复源码及
+`PYTHONPATH=/app` 模块入口，`rag_cpu_timeout_seconds=420.0`。
+仍待独立完成 Grafana 面板验证、镜像源网络修复及正式镜像重建。
