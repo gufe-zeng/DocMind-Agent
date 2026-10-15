@@ -1,6 +1,6 @@
 # DocMind-Agent V1 Memory Design
 
-Status: **M4a Completed; M4b implemented, awaiting local tests**.
+Status: **M4a + M4b Completed (2026-10-15)**.
 
 The frozen architecture separates four distinct state lifetimes:
 
@@ -9,7 +9,7 @@ The frozen architecture separates four distinct state lifetimes:
 | Working state | LangGraph AgentState | Implemented M3 |
 | Session history | Redis with TTL | M4a completed, live test passed |
 | Durable graph checkpoint | LangGraph PostgreSQL AsyncPostgresSaver | M4a completed, live test passed |
-| Long-term reusable memory | PostgreSQL `memories` + Qdrant `memories_v1` | M4b code ready, awaiting tests |
+| Long-term reusable memory | PostgreSQL `memories` + Qdrant `memories_v1` | M4b completed after live tests |
 
 ## M4a — Redis short-term session memory
 
@@ -53,7 +53,7 @@ curl --noproxy "*" http://127.0.0.1:8090/v1/sessions/SESSION_ID_FROM_M4A_OUTPUT
 
 Expect the same recent turns while the Redis TTL has not expired.
 
-## M4b — implemented, pending local acceptance
+## M4b — completed (2026-10-15)
 
 - Store only explicitly requested contract-analysis output formats (whitelisted fields); no arbitrary user facts or dialogue snippets.
 - PostgreSQL `memories` source-of-truth with user UUID, content, timestamps and indexing state.

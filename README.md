@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-当前开发阶段：**M4 — Agent Memory**。M0–M3 均已通过本地功能验收。
+当前开发阶段：**M5 — MCP Server + Client**。M0–M4 已通过本地功能验收。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -77,8 +77,8 @@ scripts\smoke_test.bat
 | M1 | Document Pipeline | Completed (2026-10-15) |
 | M2 | Hybrid RAG + Rerank + Citation | Completed (2026-10-15) |
 | M3 | LangGraph Agent + Tool Calling | Completed (2026-10-15) |
-| M4 | Session/Long-term Memory + Checkpoint | In progress |
-| M5 | MCP Server + Client | Planned |
+| M4 | Session/Long-term Memory + Checkpoint | Completed (2026-10-15) |
+| M5 | MCP Server + Client | In progress |
 | M6 | Retry + Timeout + Fallback + HITL | Planned |
 | M7 | RAG/Agent/System Eval | Planned |
 | M8 | Agent Metrics + Trace | Planned |
@@ -319,7 +319,7 @@ See [Memory Design](docs/MEMORY.md).
 
 ## M4b — Long-term preference + Checkpoint recovery
 
-M4b is implemented, **local acceptance pending**. It stores an explicitly
+M4b **passed local acceptance on 2026-10-15**, including both independent validation scripts. It stores an explicitly
 requested contract-output format in PostgreSQL and Qdrant `memories_v1`.
 A new session can recall the preference using the same demo `user_id`
 and pass its whitelisted fields into the RAG answer format. No arbitrary

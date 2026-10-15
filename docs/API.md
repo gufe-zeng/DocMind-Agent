@@ -226,7 +226,7 @@ POST /v1/approvals/{approval_id}
 No additional public APIs are added without a corresponding frozen V1
 requirement.
 
-## M4b — Opt-in format preference (implementation, local test pending)
+## M4b — Opt-in format preference (accepted 2026-10-15)
 
 No new endpoint. Save a whitelisted preference through `POST /v1/chat`:
 
