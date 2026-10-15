@@ -215,8 +215,7 @@ and [M2a Acceptance](docs/M2A_ACCEPTANCE.md) for detailed checks.
 
 M3a implements a real `StateGraph` with conditional edges and a typed tool
 registry. It reuses the accepted M2 RAG path and the PostgreSQL document
-metadata table. Routing is intentionally **rule based** for the first
-checkpoint; **LLM-driven planning is not claimed until M3b**.
+metadata table. Routing was **rule based** in M3a. M3b adds constrained, validated LLM tool ordering, not open-ended autonomy.
 
 ```text
 POST /v1/chat
@@ -245,6 +244,34 @@ Expected final output: `M3a PASS`.
 **M3a passed local integration testing** on 2026-10-15. It has no cross-request
 memory/checkpointer or model-selected multi-tool plan. See
 [M3a Acceptance](docs/M3A_ACCEPTANCE.md) and [M3 Guide](docs/M3_GUIDE.md).
+
+## M3b — Extraction, scoped summary and bounded tool planning
+
+M3b implements four real read-only tools: `search_documents`,
+`query_document_metadata`, `extract_entities` and `summarize_document`.
+Contract extraction scans the actual Qdrant source chunks for explicit
+parties and payment terms, with per-fact citations. It is a rule-based field
+extractor, **not** a general-purpose legal NER model.
+
+Summaries use the accepted M2 RAG and live Qwen path and are explicitly
+labelled **retrieved-evidence summaries**, not complete document coverage.
+Combined extraction/summary requests can use Qwen to reorder a
+rule-required tool set. A model output must pass a strict allowlist/JSON
+check; otherwise the graph uses an observable rule fallback.
+Independent per-tool citations are renumbered into one global namespace.
+
+To validate (Windows CMD, with the existing vLLM running on port 8000):
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m3b.bat
+```
+
+Expected final output: `M3b PASS` and `M3b validation passed.`.
+Code and GitHub CI tests are complete; local live acceptance is pending.
+See [M3 Guide](docs/M3_GUIDE.md).
 
 ## Related Project
 

@@ -16,3 +16,11 @@ M0 proves:
 - frozen V1 architecture and module boundaries.
 
 Do **not** claim RAG, Agent, Memory or MCP functionality before the corresponding module acceptance tests pass.
+
+## M3 interview framing
+
+- M3a was validated with real LangGraph tool routing, PostgreSQL metadata and a live Qwen3 RAG citation.
+- M3b adds four tools in total: source-pattern extraction and evidence-scoped summarization, with a bounded model-assisted ordering/fallback policy.
+- Do not claim an unrestricted autonomous LLM planner, general legal NER, or full-document summarization accuracy.
+- M3b code and unit tests exist but are not locally accepted yet.
+- Memory, MCP, HITL and quantitative Agent evaluation remain future modules.

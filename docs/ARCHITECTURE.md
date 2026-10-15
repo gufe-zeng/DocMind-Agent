@@ -354,7 +354,7 @@ DocMind-Agent/
 Directory ownership remains stable through V1. New top-level modules are not added speculatively.
 
 
-## M3a implementation (in progress)
+## M3a implementation (accepted 2026-10-15)
 
 The M3a implementation introduces a compiled LangGraph `StateGraph`:
 
@@ -374,3 +374,13 @@ and `query_document_metadata` (PostgreSQL). No checkpoint/memory in
 M3a, and no HITL approval flow or write tools until M6.
 
 See [M3 Guide](M3_GUIDE.md).
+
+## M3b implementation (awaiting local acceptance)
+
+The existing LangGraph architecture now supports four read-only tools.
+Complex extraction/summary tasks use bounded, validated Qwen tool ordering
+with a deterministic fallback. The synthesis stage renumbers citations
+from multiple tools into one consistent answer-wide source namespace.
+All document extractions are source-anchored. Long-document summaries are
+explicitly limited to retrieved evidence. Persistent memory, MCP and HITL
+remain later modules. See [M3 Guide](M3_GUIDE.md).

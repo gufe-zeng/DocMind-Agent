@@ -111,7 +111,7 @@ Return structure:
 This will be consumed by the LangGraph runtime via the already frozen
 `POST /v1/chat` endpoint in M3. It is not directly public in M2.
 
-## M3a — Agent chat (new endpoint, locally unverified)
+## M3 — Agent chat (M3a accepted; M3b pending local acceptance)
 
 ```http
 POST /v1/chat
@@ -142,7 +142,10 @@ Response:
   "intent": "search_documents",
   "answer": "根据合同，服务验收后付款期限是三十日。[S1]",
   "tools_called": ["search_documents"],
+  "plan_source": "rules",
+  "planner_fallback_reason": null,
   "steps": 1,
+  "entities": [],
   "sources": [
     {
       "id": "S1",
@@ -159,18 +162,19 @@ Response:
 
 The values above are *illustrative*, not a recorded test result.
 
-Current tool names: `search_documents` (real M2 RAG answer) and
-`query_document_metadata` (real PostgreSQL read). A simple deterministic
-router selects one or both tools. The API does not expose arbitrary tool names
-or allow unregistered write operations.
+Current allowlist: `search_documents`, `query_document_metadata`,
+`extract_entities`, `summarize_document`. Complex tasks may use a validated
+model tool order and observable rule fallback. `entities` contains extracted
+facts with `source_id` and `chunk_id`, if applicable.
 
 Errors: `422` invalid request/tool input; `503` failed service/model
 dependency. API returns JSON errors without exposing stack traces.
 
 Check: `scripts\check_m3a.bat`.
 
-**Not yet implemented:** M3b LLM-assisted tool planning, entity extraction,
-document summarization; M4 conversation memory/checkpoint; M6 HITL/retries.
+**M3a accepted**: `scripts\check_m3a.bat`.
+**M3b implemented, local validation pending**: `scripts\check_m3b.bat`.
+**Not yet implemented:** M4 conversation memory/checkpoints; M5 MCP; M6 HITL/retries.
 
 ## M4 — Sessions (not implemented)
 

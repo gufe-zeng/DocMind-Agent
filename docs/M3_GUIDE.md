@@ -1,6 +1,6 @@
 # M3 — Agent Core & Tool Calling
 
-Status: **M3a Completed (2026-10-15); M3b next**.
+Status: **M3a Completed (2026-10-15); M3b implemented, local acceptance pending**.
 
 ## Scope split
 
@@ -96,3 +96,73 @@ paths have been verified. GitHub Actions unit tests by themselves do not
 establish end-to-end success.
 
 M3 as a whole remains In Progress until M3b completes.
+
+## M3b — Grounded extraction, summary and validated LLM tool ordering
+
+### Four read-only tools
+
+| Tool | Actual data source | Result |
+|---|---|---|
+| `search_documents` | M2 Hybrid RAG, BGE Reranker, Qwen | Source-cited answer |
+| `query_document_metadata` | PostgreSQL | Structured document list |
+| `extract_entities` | Qdrant source-chunk scan, deterministic patterns | Party names/payment term, each cited to a chunk |
+| `summarize_document` | M2 Hybrid RAG scoped to document UUID | Source-cited summary of retrieved evidence |
+
+The extractor matches explicitly labelled `甲方：...`, `乙方：...` and
+payment-period clauses. Scans are capped at 200 chunks and raise an error
+rather than silently omitting additional chunks. Unsupported entity
+patterns may be missed; this is **not** an LLM-based legal NER model.
+
+The summary tool retrieves evidence using M2 and invokes real Qwen.
+It explicitly states it summarizes **retrieved excerpts only**, not every
+page of a longer contract. Source-ID validation checks references, not
+semantic entailment; claim-level faithfulness remains an M7 metric.
+
+### Model-assisted ordering, with explicit fallback
+
+A simple query uses rule-based routing with no extra LLM call.
+When a complex query needs at least two extraction/summary-related tools,
+one Qwen call proposes a JSON ordering of the *required tool set*.
+The proposed list must contain exactly those required tools, without
+duplicates, extra tools or omitted tasks. Invalid/unavailable model
+responses trigger a rule fallback. Thus `llm_validated` means constrained
+model-assisted **ordering**, not open-ended autonomous task planning.
+
+API field `plan_source` records `rules`, `llm_validated` or
+`rule_fallback`; `planner_fallback_reason` contains a high-level reason.
+The maximum Agent tool steps remains eight; M6 will add systematic
+per-tool timeout/retry and HITL policies.
+
+### Global citation safety
+
+Two independent tools can both cite `[S1]` while referring to different
+source chunks. The synthesis node rewrites these into a single response
+namespace, e.g. first tool `[S1]`, second tool `[S2]`, and updates
+structured extracted facts' `source_id` fields to match.
+
+### Local end-to-end validation
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m3b.bat
+```
+
+Keep `llm-serving-ops` vLLM running on host port 8000. Existing
+ModelScope ONNX weights are reused; no new model download is required.
+
+The test checks real extraction of both contract parties and a 30-day
+payment period; a live Qwen evidence-scoped summary; a combined two-tool
+LangGraph task; and globally unique citation IDs.
+
+Expected: `PASS cited deterministic entity extraction`,
+`PASS evidence-scoped live Qwen summary`,
+`PASS multi-tool LangGraph plan + unique citations`, then `M3b PASS`.
+
+### Not yet implemented
+
+- M4: Redis session memory, long-term memory and durable checkpoints.
+- M5: real MCP client/server communication.
+- M6: full timeout/retry/fallback and approval-protected writes.
+- M7: retrieval/evidence factuality and Agent task-success metrics.
