@@ -36,7 +36,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["app*", "mcp_server*"]
+include = ["app*", "mcp_server*", "eval*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
