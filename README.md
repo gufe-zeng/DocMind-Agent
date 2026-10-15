@@ -484,7 +484,7 @@ V1 does **not** implement Multi-Agent, fine-tuning, Kubernetes, OCR, multimodal 
 
 ## M7a — Retrieval evaluation (accepted 2026-10-15)
 
-`scripts\\check_m7a.bat` passed on the local Docker stack: three synthetic
+`scripts\check_m7a.bat` passed on the local Docker stack: three synthetic
 document-level cases produced Recall@3=1.0 and MRR@3=1.0.
 Sixty-three retrieved candidate chunks were outside the fixture's newly
 indexed document IDs. These are smoke-test metrics, not real-world
@@ -501,10 +501,10 @@ stdio MCP stack without Qwen, and checks source evidence/document scope.
 Windows CMD:
 
 ```cmd
-cd /d E:\\project\\DocMind-Agent
+cd /d E:\project\DocMind-Agent
 git pull
 docker compose up -d --build api
-scripts\\check_m7b.bat
+scripts\check_m7b.bat
 ```
 
 Expected: `M7b AGENT EVAL PASS` and
