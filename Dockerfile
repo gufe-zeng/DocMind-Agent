@@ -35,6 +35,7 @@ COPY scripts/check_m7a.py ./scripts/check_m7a.py
 COPY scripts/check_m7b.py ./scripts/check_m7b.py
 COPY scripts/check_m7c.py ./scripts/check_m7c.py
 COPY scripts/check_m8.py ./scripts/check_m8.py
+COPY scripts/check_m9.py ./scripts/check_m9.py
 COPY scripts/check_modelscope.py ./scripts/check_modelscope.py
 COPY migrations ./migrations
 COPY data/samples ./data/samples

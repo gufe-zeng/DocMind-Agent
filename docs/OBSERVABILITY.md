@@ -1,6 +1,6 @@
 # M8 — Agent Observability and Docker build caching
 
-**Status: M8 implemented in GitHub; local Docker verification pending.**
+**Status: M8 core accepted by real local Docker on 2026-10-15; optional Grafana dashboard verification pending.**
 M7a, M7b and M7c completed their local smoke gates on 2026-10-15.
 M8 reuses the frozen V1 API. It does not add a trace-read HTTP endpoint
 or expose confidential document contents in telemetry.
@@ -93,7 +93,7 @@ M8 OBSERVABILITY PASS
 M8 Observability validation passed.
 ```
 
-Mark M8 local core acceptance **Completed** only if both phases pass.
+**Observed on 2026-10-15:** both phases passed, including `M8 OBSERVABILITY PASS` after API restart. See [M8 acceptance](M8_ACCEPTANCE.md).
 
 ## 4. Optional Prometheus/Grafana dashboard (requires image downloads)
 

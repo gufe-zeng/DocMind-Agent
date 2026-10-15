@@ -76,8 +76,8 @@ See [M7b acceptance](M7B_ACCEPTANCE.md).
 
 ## M7c — System evaluation (accepted 2026-10-15)
 
-Runners: `scripts\\check_m7c.bat` (BASE, no Qwen) and
-`scripts\\check_m7c_live.bat` (BASE plus real Qwen probe).
+Runners: `scripts\check_m7c.bat` (BASE, no Qwen) and
+`scripts\check_m7c_live.bat` (BASE plus real Qwen probe).
 Aggregation: `eval/system_eval.py`.
 Both use a synthetic contract and the existing frozen V1 API. No new public
 endpoint or production Prometheus/tracing instrumentation is introduced.
@@ -115,10 +115,10 @@ Agent HTTP response token usage.
 Windows CMD (BASE, no Qwen):
 
 ```cmd
-cd /d E:\\project\\DocMind-Agent
+cd /d E:\project\DocMind-Agent
 git pull
 docker compose up -d --build api
-scripts\\check_m7c.bat
+scripts\check_m7c.bat
 ```
 
 Expected:
@@ -131,7 +131,7 @@ With the existing `llm-serving-ops` Qwen/vLLM endpoint running on host
 port 8000, run LIVE separately:
 
 ```cmd
-scripts\\check_m7c_live.bat
+scripts\check_m7c_live.bat
 ```
 
 Expected:
@@ -140,7 +140,7 @@ M7c SYSTEM LIVE PASS
 M7c system live validation passed.
 ```
 
-**Accepted on 2026-10-15:** both BASE and LIVE passed locally, with four serial Agent requests and five tool calls per run; separate Qwen probe returned one model call and measured token usage. See [M7c acceptance](M7C_ACCEPTANCE.md). The top-level `scripts/run_eval.bat` remains reserved for a future combined evaluation runner.
+**Accepted on 2026-10-15:** both BASE and LIVE passed locally, with four serial Agent requests and five tool calls per run; separate Qwen probe returned one model call and measured token usage. See [M7c acceptance](M7C_ACCEPTANCE.md). The top-level `scripts/run_eval.bat` now dispatches individual accepted M7/M8 checks and the new M9 BASE/LIVE Demo without rebuilding Docker.
 
 ## General boundaries
 
@@ -153,3 +153,5 @@ M7c system live validation passed.
 **M7 synthesis:** The three staged evaluation gates are accepted as local
 synthetic smoke evidence only. Their 100% task metrics do not establish
 real-document performance, semantic faithfulness, or production latency.
+
+M9 guide: [V1 end-to-end demo](M9_DEMO.md). Do not treat the combined synthetic smoke tests as a real-document quality benchmark.

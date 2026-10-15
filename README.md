@@ -18,7 +18,7 @@ Document Pipeline
 → Observability
 ```
 
-**M0–M7 已通过本地功能和合成评测验收；M8 可观测性实现已提交，等待一次本机 Docker 验收。** 本地验收不代表生产就绪。
+**M0–M8 已通过本地功能与合成评测验收；M9 正在进行业务 Demo 和工程收尾。** 本地验收不代表生产就绪。
 
 V1 范围已冻结，详见 [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) 和 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
@@ -81,8 +81,8 @@ scripts\smoke_test.bat
 | M5 | MCP Server + Client | Completed (2026-10-15) |
 | M6 | Retry + Timeout + Fallback + HITL | Completed (2026-10-15) |
 | M7 | RAG/Agent/System Eval | Completed: M7a/M7b/M7c synthetic local gates (2026-10-15) |
-| M8 | Agent Metrics + Trace | Implemented; one local Docker acceptance pending |
-| M9 | Engineering wrap-up + Demo + Resume | Planned |
+| M8 | Agent Metrics + Trace | Completed: real PostgreSQL Trace, MCP/HITL and Prometheus acceptance (2026-10-15) |
+| M9 | Engineering wrap-up + Demo + Resume | Implemented; BASE/LIVE Docker acceptance pending |
 
 ## M1a — Parse and chunk documents
 
@@ -515,37 +515,6 @@ Average steps=1.142857, runtime failure rate=0.
 See [M7b acceptance](docs/M7B_ACCEPTANCE.md) and
 [Evaluation design](docs/EVALUATION.md).
 
-## M7c — System evaluation (implemented; BASE/LIVE acceptance pending)
-
-M7c measures four serial real Agent HTTP request latencies, read-only M6
-`tool_events` durations, and separately samples real Dense/BM25/RRF retrieval
-and BGE rerank stage latencies. These stage samples are **not** attributed
-to a particular Agent request. The baseline confirms no-model tool routes.
-Optional LIVE testing measures a separate real Qwen RAG call with actual
-prompt/completion token usage where the provider returns it.
-
-Windows CMD (BASE, no Qwen):
-
-```cmd
-cd /d E:\\project\\DocMind-Agent
-git pull
-docker compose up -d --build api
-scripts\\check_m7c.bat
-```
-
-Expected: `M7c SYSTEM BASE PASS`.
-
-With the existing Qwen/vLLM server running on host port 8000:
-
-```cmd
-scripts\\check_m7c_live.bat
-```
-
-Expected: `M7c SYSTEM LIVE PASS`.
-Both live Docker gates are required before marking M7c Completed.
-See [Evaluation design](docs/EVALUATION.md).
-
-
 ## M7c — System evaluation (accepted 2026-10-15)
 
 Both BASE and LIVE local Docker checks passed. Four real serial HTTP requests
@@ -582,5 +551,39 @@ The script automatically tests real Agent/MCP/HITL traces, restarts
 **only the API container** and checks that PostgreSQL trace data persists.
 The restart does not rebuild the API image; Qwen is not required.
 Expected: `M8 OBSERVABILITY PASS`.
-See [M8 guide](docs/OBSERVABILITY.md) for optional Grafana on local ports
-3091/9091 without another API rebuild. **M8 is not yet locally accepted.**
+Observed: `M8 OBSERVABILITY PASS` and `M8 Observability validation passed.` on local Docker, including restart recovery. See [M8 acceptance](docs/M8_ACCEPTANCE.md) and [M8 guide](docs/OBSERVABILITY.md). Optional Grafana dashboards remain separately unverified.
+
+## M9 — End-to-end business demo and engineering wrap-up (pending local acceptance)
+
+M9 consolidates existing V1 capabilities rather than adding another public API:
+real synthetic TXT/PDF/DOCX upload/index, LangGraph two-tool MCP, extraction
+with source references, Redis follow-up, explicit cross-session preferences,
+HITL approval/idempotency and PostgreSQL Trace/Prometheus.
+
+Run Windows CMD **one new API build**, then the no-rebuild validators:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m9.bat
+```
+
+Expected: `M9 DEMO BASE PASS`. With Qwen/vLLM already listening on host 8000:
+
+```cmd
+scripts\check_m9_live.bat
+```
+
+Expected: `M9 DEMO LIVE PASS`. The LIVE script reuses BASE's indexed
+fixture for one Qwen-grounded RAG answer; CPU rerank may take minutes.
+Neither validator rebuilds the Docker image. M9 remains pending actual
+local results.
+
+- [M9 Demo guide](docs/M9_DEMO.md)
+- [M9 acceptance](docs/M9_ACCEPTANCE.md)
+- [Resume and interview project description](docs/RESUME_PROJECT.md)
+- [Evidence-based release checklist](docs/RELEASE_CHECKLIST.md)
+
+The full frozen V1 sign-off additionally requires a local Grafana
+dashboard check; the M8 core metrics already passed.

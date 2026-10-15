@@ -1,17 +1,26 @@
-# M8 Observability Acceptance
+# M8 Observability Acceptance — 2026-10-15
 
-**Status: implementation submitted; local BASE and optional dashboard checks pending.**
+**Decision: M8 core Completed by actual local Docker validation.**
 
-The M8 GitHub change adds:
-- request `trace_id` for chat and protected approval;
-- bounded LangGraph node spans and M6 tool-event latency metrics;
-- schema `004_agent_traces.sql` with PostgreSQL durability;
-- Prometheus counters and histograms on the existing `/metrics` route;
-- privacy-safe structured logs and model usage counters;
-- faster Docker rebuild layering and optional Prometheus/Grafana configs.
+The user executed `scripts\check_m8.bat`. Observed:
 
-**Do not mark M8 Completed until the actual Docker two-stage acceptance
-prints `M8 OBSERVABILITY PASS`.** Unit tests and GitHub CI do not replace
-the database/restart checks. The optional dashboard requires fetching
-third-party container images and can be checked independently without
-another API rebuild. See [M8 guide](OBSERVABILITY.md).
+```text
+PASS M8 API ready and synthetic document indexed
+PASS durable trace for real LangGraph nodes and PostgreSQL tool
+PASS real Agent->MCP trace with source-preserving tool event
+PASS pending HITL graph request is traced without pre-approval write
+PASS HITL approval checkpoint resume and second durable trace
+PASS /metrics exposes request, node/tool and RAG stage families
+M8 PREPARE PASS - restart only API and verify persisted traces
+PASS M8 PostgreSQL Agent traces survive real API restart
+PASS new requests produce traces after API restart
+PASS Prometheus instrumentation active after API restart
+M8 OBSERVABILITY PASS
+M8 Observability validation passed.
+```
+
+Validated on real Docker: LangGraph node and MCP tool events, HITL pause/resume, durable PostgreSQL request traces across an actual API restart, new traces after restart, and Prometheus metric families.
+
+Not validated: the separately provisioned Grafana dashboard, production authentication, trace retention, load testing, or distributed tracing into external Qwen/MCP subprocesses. This is local functional acceptance only.
+
+M8 also rearranged Docker dependencies into a cached layer. No measured after-versus-before build speedup has been reported.
