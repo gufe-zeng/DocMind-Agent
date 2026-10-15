@@ -33,3 +33,15 @@ server process, and the MCP initialize/tools-list/tools-call lifecycle.
 Four bounded read-only document tools expose provenance-aware PostgreSQL,
 Qdrant and Hybrid Retrieval results. This is distinct from M3's direct
 Python function registry. M5a transport acceptance and M5b Agent integration both passed in the real Docker environment; this is functional testing rather than production reliability evaluation.
+
+## M6 — Reliability and HITL (current boundaries)
+
+- M6a passed actual fault-injection testing: two transient retries, explicit
+  no-facts fallback, and partial multi-tool source preservation.
+- M6b code uses a real LangGraph interrupt and a PostgreSQL approval
+  state machine. Approving resumes the checkpoint and triggers an
+  idempotent database transaction; rejecting never inserts a note.
+- M6b requires a separate **local Docker acceptance**, including API
+  restart and both decision branches, before it can be called completed.
+- No real authentication, policy-driven RBAC, remote MCP access or
+  exactly-once arbitrary external side-effect execution is claimed.

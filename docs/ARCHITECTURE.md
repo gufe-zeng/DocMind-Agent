@@ -422,3 +422,27 @@ The previously accepted eight-step bound remains unchanged.
 Write actions are intentionally excluded from this executor.
 FR-10's protected `save_review_note` and Human Approval endpoint
 will be implemented and verified in M6b.
+
+## M6b — Durable Human Approval (pending local acceptance)
+
+The narrow write action `save_review_note` uses the **official LangGraph
+`interrupt()` checkpoint** and the frozen `POST /v1/approvals/{approval_id}`
+API. Its decision lives in PostgreSQL `approvals`; approved notes alone
+are inserted in `review_notes` in a transaction with an idempotent unique
+approval ID. The API resumes the waiting graph with `Command(resume=...)`.
+
+```text
+POST /v1/chat — explicit save-review-note command
+  → PostgreSQL create PENDING approval; no note written
+  → LangGraph call_tool invokes interrupt()
+  → checkpoint stored to PostgreSQL
+  → HTTP approval_required + approval_id
+  → Human: POST /v1/approvals/{approval_id}
+  → persist approved/rejected decision
+  → resume same LangGraph checkpoint
+  → approved: exactly one review_notes insert; rejected: no write
+  → final approved/rejected state + idempotent repeat decision
+```
+
+Readonly M6a timeout/retry policies **never** execute protected writes.
+The demo's user/session UUIDs do not replace authentication or RBAC.

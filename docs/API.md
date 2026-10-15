@@ -290,3 +290,52 @@ continues to count tool nodes, not network retry attempts.
 
 Error/fallback validation: `scripts\check_m6a.bat`.
 No protected-write endpoint is added in M6a.
+
+## M6b — Human Approval for a protected review-note write
+
+Implemented; **local Docker acceptance pending**. The V1 API uses its
+existing `/v1/chat` endpoint and the frozen approval endpoint. There is
+no new arbitrary write-tool endpoint.
+
+### Step 1 — Ask the Agent to prepare a note (does not write)
+
+```http
+POST /v1/chat
+```
+
+```json
+{ "query": "请保存审核备注：请人工核查付款条件。",
+  "document_id": "UUID_OF_INDEXED_DOCUMENT",
+  "user_id": "YOUR_DEMO_USER_UUID" }
+```
+
+Expected: `status=approval_required`, `approval_required=true`,
+and a generated `approval_id` and `session_id`. The note is not yet
+stored in `review_notes`.
+
+### Step 2 — Decide through the frozen endpoint
+
+```http
+POST /v1/approvals/{approval_id}
+```
+
+```json
+{ "decision": "approve",
+  "session_id": "SESSION_UUID_FROM_STEP_1",
+  "user_id": "YOUR_DEMO_USER_UUID" }
+```
+
+Use `decision=reject` to cancel without writing. A successful
+approval returns `status=approved`, `review_note_id` and
+`checkpoint_completed=true`. Repeating the same decision returns
+the same result, while a conflicting later decision returns HTTP 409.
+Wrong user/session UUIDs return HTTP 403. The pending graph checkpoint
+also blocks new chat turns using the same session ID until resolved.
+
+**Scope:** only explicit `保存审核备注：...`, `保存审查备注：...` and
+other narrowly allowlisted review-note phrases are recognized.
+The note must be 1–500 characters and reference an indexed document.
+This demo is unauthenticated; do not treat UUID fields as real permission
+checks or deploy the API publicly.
+
+Local acceptance: `scripts\check_m6b.bat` (includes API restart).

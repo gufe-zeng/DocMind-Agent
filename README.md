@@ -441,6 +441,36 @@ downloads or a live Qwen service are required.
 **M6b** is the separate `save_review_note` protected-write / HITL
 implementation. See [M6 Reliability Guide](docs/RELIABILITY.md).
 
+## M6b — Protected `save_review_note` / Human-in-the-Loop
+
+M6b code is implemented, **local Docker acceptance pending**.
+
+An explicit `保存审核备注：...` request creates a PostgreSQL approval
+record. LangGraph then pauses with `interrupt()` **before** the note is
+written. The frozen `POST /v1/approvals/{approval_id}` endpoint records
+an approval or rejection, resumes the checkpoint and writes the note
+transactionally **only if approved**. Repeated requests cannot duplicate
+a note; a contradictory decision is rejected.
+
+The test also verifies restart recovery of a pending approval:
+
+```cmd
+cd /d E:\project\DocMind-Agent
+git pull
+docker compose up -d --build api
+scripts\check_m6b.bat
+```
+
+The script will **restart only the API container once** between creating
+the pending note and approving it. No Qwen is required and no databases,
+volumes or model caches are removed.
+
+Expected: `M6b HITL PASS` and `M6b HITL validation passed.`.
+See [M6 Reliability and HITL Guide](docs/RELIABILITY.md).
+
+**Security:** demo `user_id`/`session_id` UUIDs are not authentication.
+The approval workflow must not be exposed to untrusted clients.
+
 ## Related Project
 
 Inference serving and observability base:
